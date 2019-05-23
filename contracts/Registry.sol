@@ -15,13 +15,12 @@ contract Registry is Ownable {
     mapping(address => string) private brokers;
 
     // allows owner of contract to overwrite an entry in the registry
-    function adminOverwrite(bytes2 countryCode, bytes3 partyID, address identity, string memory brokerURL) public onlyOwner {
+    function adminOverwrite(bytes2 countryCode, bytes3 partyID, address newIdentity, string memory brokerURL) public onlyOwner {
         address oldIdentity = parties[countryCode][partyID];
-        parties[countryCode][partyID] = identity;
-        if (identity != oldIdentity) {
-            brokers[oldIdentity] = brokerURL;
-        } else {
-            brokers[identity] = brokerURL;
+        parties[countryCode][partyID] = newIdentity;
+        brokers[newIdentity] = brokerURL;
+        if (newIdentity != oldIdentity) {
+            delete brokers[oldIdentity];
         }
     }
 
@@ -39,8 +38,8 @@ contract Registry is Ownable {
         bytes32 paramHash = keccak256(abi.encodePacked(countryCode, partyID));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
         require(parties[countryCode][partyID] == signer, "Unauthorized to remove this entry from the registry");
-        parties[countryCode][partyID] = address(0);
-        brokers[signer] = "";
+        delete parties[countryCode][partyID];
+        delete brokers[signer];
     }
 
     function updateBrokerURL(bytes2 countryCode, bytes3 partyID, string memory brokerURL, uint8 v, bytes32 r, bytes32 s) public {
@@ -51,7 +50,7 @@ contract Registry is Ownable {
     }
 
     function addressOf(bytes2 countryCode, bytes3 partyID) public view returns (address partyAddress) {
-        return parties[countryCode][partyID];
+        partyAddress = parties[countryCode][partyID];
     }
 
     function brokerOf(address partyAddress) public view returns (string memory brokerURL) {
