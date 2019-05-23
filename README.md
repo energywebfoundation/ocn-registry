@@ -2,14 +2,6 @@ Share&Charge Registry Smart Contracts
 
 Share&Charge eMobility smart contracts written in Solidity for Ethereum-based networks.
 
-<!-- ## Install
-
-The contract definitions are available as an NPM package for programmatic access and usage:
-
-```
-npm install @shareandcharge/registry
-``` -->
-
 ## Usage
 
 The package provides a class `SnC` which simplifies the work with the smart-contracts. 
