@@ -15,10 +15,10 @@ contract Registry is Ownable {
     mapping(address => string) private brokers;
 
     // allows owner of contract to overwrite an entry in the registry
-    function adminOverwrite(bytes2 countryCode, bytes3 partyID, address newIdentity, string memory brokerURL) public onlyOwner {
+    function adminOverwrite(bytes2 countryCode, bytes3 partyID, address newIdentity, string memory newBrokerURL) public onlyOwner {
         address oldIdentity = parties[countryCode][partyID];
         parties[countryCode][partyID] = newIdentity;
-        brokers[newIdentity] = brokerURL;
+        brokers[newIdentity] = newBrokerURL;
         if (newIdentity != oldIdentity) {
             delete brokers[oldIdentity];
         }
