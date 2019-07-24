@@ -21,6 +21,7 @@
     "lint": "solium -d contracts",
     "cover": "solidity-coverage",
     "migrate": "truffle migrate",
+    "migrate-docker": "truffle migrate --network=docker",
     "ganache": "ganache-cli -m \"candy maple cake sugar pudding cream honey rich smooth crumble sweet treat\" --port 8544 --accounts 20 --networkId=9 --gasLimit=10000000",
     "publish-dev": "truffle migrate && node bin/publish.js",
     "publish-poa": "truffle migrate --network=poa_hd && node bin/publish.js poa",

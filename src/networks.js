@@ -1,3 +1,5 @@
+const HDWalletProvider = require("truffle-hdwallet-provider")
+
 const MNEMONIC = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'
 
 module.exports = {
@@ -44,6 +46,13 @@ module.exports = {
       network_id: '17',
       from: "0x627306090abaB3A6e1400e9345bC60c78a8BEf57",
       gas: 4000000
+    },
+    volta: {
+      protocol: 'http',
+      host: '35.178.1.16',
+      port: 80,
+      network_id: '73799',
+      gasPrice: 1
     },
     production: {
       protocol: 'http',

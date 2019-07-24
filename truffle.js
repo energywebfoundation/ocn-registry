@@ -16,6 +16,12 @@ module.exports = {
       network_id: '9',
       gas: 8000000
     },
+    docker: {
+      protocol: 'http',
+      host: '172.16.238.10',
+      port: 8544,
+      network_id: "*"
+    },
     local: {
       protocol: 'http',
       host: 'localhost',
@@ -69,6 +75,11 @@ module.exports = {
       network_id: '0x11',
       from: "0x00a329c0648769a73afac7f9381e08fb43dbea72",
       gas: 4000000
+    },
+    volta: {
+      provider: () => new HDWalletProvider(process.env.VOLTA_PKEY, "http://35.178.1.16/"),
+      network_id: '73799',
+      gasPrice: 1
     },
     production: {
       protocol: 'http',

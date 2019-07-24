@@ -1,0 +1,24 @@
+version: "3.7"
+
+services:
+  ganache:
+    image: "trufflesuite/ganache-cli"
+    ports: 
+      - "8544:8544"
+    networks:
+      ganache-net:
+        ipv4_address: 172.16.238.10
+    command: ["-m", "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat", "--port", "8544", "--accounts", "20", "--networkId=9", "--gasPrice=1", "--gasLimit=10000000"] 
+  deploy-registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - ganache-net
+
+networks:
+  ganache-net:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
