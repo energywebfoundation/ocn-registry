@@ -1,25 +1,25 @@
+# Open Charge Network (OCN) Registry Smart Contracts
+
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a24c1584300a4c758d8da109a3e6cb80)](https://www.codacy.com?utm_source=bitbucket.org&amp;utm_medium=referral&amp;utm_content=shareandcharge/registry&amp;utm_campaign=Badge_Grade)
 
-Share&Charge Registry Smart Contracts
-
-Share&Charge eMobility smart contracts written in Solidity for Ethereum-based networks.
+Repository of smart contracts written in Solidity for Ethereum-based networks, used for the decentralized Registry of the Open Charging Network.
 
 ## Usage
 
-The package provides a class `SnC` which simplifies the work with the smart-contracts. 
+Provided is a class `SnC` in `./src/main.js` which simplifies the work with the smart-contracts.
 The constructor takes 3 parameters:
 
 * stage - one of `local`, `tobalaba` and `volta`
 * privateKey - the private key of the account you want to sign your transactions with
 * provider - optionally you can override the default configuration for accessing the node by supplying your own provider
 
-the packages uses [ethers](https://docs.ethers.io/ethers.js/html/) for communicating 
-with the parity node. 
+The class uses [ethers](https://docs.ethers.io/ethers.js/html/) for communicating 
+with the node. 
 
-the SnC class provides access to the smart contracts in the form of instantiated objects which expose 
+The SnC class provides access to the smart contracts in the form of instantiated objects which expose 
 all the implemented functions. The available smart-contracts are:
 
-* registry - a list of parties in the network and the broker that they are connected to.
+* registry - a list of parties in the network and the OCN Client that they are connected to.
 
 
 ## Development
@@ -27,8 +27,8 @@ all the implemented functions. The available smart-contracts are:
 Clone and install dependencies:
 
 ```
-$ git clone https://bitbucket.org/shareandcharge/registry.git
-$ cd registry
+$ git clone https://bitbucket.org/shareandcharge/ocn-registry.git
+$ cd ocn-registry
 $ npm install
 ```
 
