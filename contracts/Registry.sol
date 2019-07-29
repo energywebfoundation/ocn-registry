@@ -4,57 +4,87 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract Registry is Ownable {
 
-    // message prefix included in signatures
+    // message prefix which should be included in any signed data
     string constant private prefix = "\u0019Ethereum Signed Message:\n32";
 
-    // country_code => party_id => eth_address (identity)
-    mapping(bytes2 => mapping(bytes3 => address)) private parties;
+    // links OCPI role to their address
+    mapping(bytes2 => mapping(bytes3 => address)) public addressOf;
 
-    // collection of client identities and the server they are connected to
-    // eth_address (identity) => server_address
-    mapping(address => string) private brokers;
+    // describes a client on the OCN
+    struct ClientInfo {
+        string url;
+        address addr;
+    }
+
+    // collection of role identities and the server they are connected to
+    // role identity => server information
+    mapping(address => ClientInfo) public clientOf;
 
     // allows owner of contract to overwrite an entry in the registry
-    function adminOverwrite(bytes2 countryCode, bytes3 partyID, address newIdentity, string memory newBrokerURL) public onlyOwner {
-        address oldIdentity = parties[countryCode][partyID];
-        parties[countryCode][partyID] = newIdentity;
-        brokers[newIdentity] = newBrokerURL;
-        if (newIdentity != oldIdentity) {
-            delete brokers[oldIdentity];
+    function adminOverwrite(bytes2 countryCode,
+                            bytes3 partyID,
+                            address newRoleAddress,
+                            string memory newClientURL,
+                            address newClientAddress) public onlyOwner {
+
+        address oldClientAddress = addressOf[countryCode][partyID];
+        addressOf[countryCode][partyID] = newRoleAddress;
+        clientOf[newRoleAddress] = ClientInfo(newClientURL, newClientAddress);
+        if (newRoleAddress != oldClientAddress) {
+            delete clientOf[oldClientAddress];
         }
     }
 
-    // register a party/client to the S&C network
-    function register(bytes2 countryCode, bytes3 partyID, string memory brokerURL, uint8 v, bytes32 r, bytes32 s) public {
-        require(parties[countryCode][partyID] == address(0), "Party ID already exists in registry");
-        bytes32 paramHash = keccak256(abi.encodePacked(countryCode, partyID, brokerURL));
+    // register a role on the S&C network
+    function register(bytes2 countryCode,
+                      bytes3 partyID,
+                      string memory clientURL,
+                      address clientAddress,
+                      uint8 v,
+                      bytes32 r,
+                      bytes32 s) public {
+
+        require(addressOf[countryCode][partyID] == address(0), "Party ID already exists in registry");
+        bytes32 paramHash = keccak256(abi.encodePacked(countryCode, partyID, clientURL, clientAddress));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
-        parties[countryCode][partyID] = signer;
-        brokers[signer] = brokerURL;
+        addressOf[countryCode][partyID] = signer;
+        clientOf[signer] = ClientInfo(clientURL, clientAddress);
     }
 
     // remove a party/client from the S&C network
-    function deregister(bytes2 countryCode, bytes3 partyID, uint8 v, bytes32 r, bytes32 s) public {
+    function deregister(bytes2 countryCode,
+                        bytes3 partyID,
+                        uint8 v,
+                        bytes32 r,
+                        bytes32 s) public {
+
         bytes32 paramHash = keccak256(abi.encodePacked(countryCode, partyID));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
-        require(parties[countryCode][partyID] == signer, "Unauthorized to remove this entry from the registry");
-        delete parties[countryCode][partyID];
-        delete brokers[signer];
+        require(addressOf[countryCode][partyID] == signer, "Unauthorized to remove this entry from the registry");
+        delete addressOf[countryCode][partyID];
+        delete clientOf[signer];
     }
 
-    function updateBrokerURL(bytes2 countryCode, bytes3 partyID, string memory brokerURL, uint8 v, bytes32 r, bytes32 s) public {
-        bytes32 paramHash = keccak256(abi.encodePacked(countryCode, partyID, brokerURL));
+    function updateClientInfo(bytes2 countryCode,
+                              bytes3 partyID,
+                              string memory newClientURL,
+                              address newClientAddress,
+                              uint8 v,
+                              bytes32 r,
+                              bytes32 s) public {
+
+        bytes32 paramHash = keccak256(abi.encodePacked(countryCode, partyID, newClientURL, newClientAddress));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
-        require(parties[countryCode][partyID] == signer, "Unauthorized to update this entry in the registry");
-        brokers[signer] = brokerURL;
+        require(addressOf[countryCode][partyID] == signer, "Unauthorized to update this entry in the registry");
+        clientOf[signer] = ClientInfo(newClientURL, newClientAddress);
     }
 
-    function addressOf(bytes2 countryCode, bytes3 partyID) public view returns (address partyAddress) {
-        partyAddress = parties[countryCode][partyID];
-    }
+    // function addressOf(bytes2 countryCode, bytes3 partyID) public view returns (address partyAddress) {
+    //     partyAddress = roles[countryCode][partyID];
+    // }
 
-    function brokerOf(address partyAddress) public view returns (string memory brokerURL) {
-        return brokers[partyAddress];
-    }
+    // function brokerOf(address partyAddress) public view returns (string memory brokerURL) {
+    //     return brokers[partyAddress];
+    // }
 
 }

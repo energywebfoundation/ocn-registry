@@ -16,10 +16,10 @@ class SnC {
     this.registry = new ethers.Contract(this.registryJson.address, this.registryJson.abi, this.wallet)
   }
 
-  async getSignedRegisterOrUpdate(countryCode, partyID, brokerURL) {
+  async getSignedRegisterOrUpdate(countryCode, partyID, clientURL, clientAddress) {
     countryCode = '0x' + Buffer.from(countryCode).toString('hex')
     partyID = '0x' + Buffer.from(partyID).toString('hex')
-    return sign.registerOrUpdate(countryCode, partyID, brokerURL, this.wallet)
+    return sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, this.wallet)
   }
 
   async getSignedDeregister(countryCode, partyID) {
@@ -28,11 +28,12 @@ class SnC {
     return sign.deregister(countryCode, partyID, this.wallet)
   }
 
-  async register(countryCode, partyID, brokerURL, signature) {
+  async register(countryCode, partyID, clientURL, clientAddress, signature) {
     const tx = await this.registry.register(
       '0x' + Buffer.from(countryCode).toString('hex'),
       '0x' + Buffer.from(partyID).toString('hex'),
-      brokerURL,
+      clientURL,
+      clientAddress,
       signature.v,
       signature.r,
       signature.s,
@@ -42,11 +43,12 @@ class SnC {
     return receipt.transactionHash
   }
 
-  async updateBrokerURL(countryCode, partyID, brokerURL, signature) {
+  async updateBrokerURL(countryCode, partyID, newClientURL, newClientAddress, signature) {
     const tx = await this.registry.updateBrokerURL(
       '0x' + Buffer.from(countryCode).toString('hex'),
       '0x' + Buffer.from(partyID).toString('hex'),
-      brokerURL,
+      newClientURL,
+      newClientAddress,
       signature.v,
       signature.r,
       signature.s,
