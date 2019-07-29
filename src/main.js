@@ -43,8 +43,8 @@ class SnC {
     return receipt.transactionHash
   }
 
-  async updateBrokerURL(countryCode, partyID, newClientURL, newClientAddress, signature) {
-    const tx = await this.registry.updateBrokerURL(
+  async updateClientInfo(countryCode, partyID, newClientURL, newClientAddress, signature) {
+    const tx = await this.registry.updateClientInfo(
       '0x' + Buffer.from(countryCode).toString('hex'),
       '0x' + Buffer.from(partyID).toString('hex'),
       newClientURL,
