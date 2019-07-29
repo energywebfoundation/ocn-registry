@@ -21,10 +21,8 @@ contract('Registry', function (accounts) {
         const clientAddress = ethers.Wallet.createRandom().address
         const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
         await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-        assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-        const client = await registry.clientOf(wallet.address)
-        assert.equal(client.url, clientURL)
-        assert.equal(client.addr, clientAddress)
+        assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+        assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
     })
 
     it('does not allow registration of same party twice', async () => {
@@ -34,10 +32,8 @@ contract('Registry', function (accounts) {
       const clientAddress = ethers.Wallet.createRandom().address
       const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
       await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client = await registry.clientOf(wallet.address)
-      assert.equal(client.url, clientURL)
-      assert.equal(client.addr, clientAddress)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       
       const clientURL2 = 'https://broker.company.net/'
       const sig2 = await sign.registerOrUpdate(countryCode, partyID, clientURL2, clientAddress, wallet)
@@ -45,10 +41,8 @@ contract('Registry', function (accounts) {
         await registry.register(countryCode, partyID, clientURL2, clientAddress, sig2.v, sig2.r, sig2.s)
       } catch (err) {
         assert.isTrue(err.message.endsWith('Party ID already exists in registry.'))
-        assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-        const client2 = await registry.clientOf(wallet.address)
-        assert.equal(client2.url, clientURL)
-        assert.equal(client2.addr, clientAddress)
+        assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+        assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       }
     })
 
@@ -59,19 +53,15 @@ contract('Registry', function (accounts) {
       const clientAddress = ethers.Wallet.createRandom().address
       const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
       await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client = await registry.clientOf(wallet.address)
-      assert.equal(client.url, clientURL)
-      assert.equal(client.addr, clientAddress)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
 
       const clientURL2 = 'https://broker.company.net/'
       const clientAddress2 = ethers.Wallet.createRandom().address
       const sig2 = await sign.registerOrUpdate(countryCode, partyID, clientURL2, clientAddress2, wallet)
       await registry.updateClientInfo(countryCode, partyID, clientURL2, clientAddress2, sig2.v, sig2.r, sig2.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client2 = await registry.clientOf(wallet.address)
-      assert.equal(client2.url, clientURL2)
-      assert.equal(client2.addr, clientAddress2)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL2)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress2)
     })
 
     it('does not allow update of client url by different wallet', async () => {
@@ -81,10 +71,8 @@ contract('Registry', function (accounts) {
       const clientAddress = ethers.Wallet.createRandom().address
       const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
       await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client = await registry.clientOf(wallet.address)
-      assert.equal(client.url, clientURL)
-      assert.equal(client.addr, clientAddress)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
 
       const clientURL2 = 'https://broker.company.net/'
       try {
@@ -92,10 +80,8 @@ contract('Registry', function (accounts) {
         await registry.updateClientInfo(countryCode, partyID, clientURL2, clientAddress, sig2.v, sig2.r, sig2.s)
       } catch (err) {
         assert.isTrue((err.message.endsWith('Unauthorized to update this entry in the registry.')))
-        assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-        const client2 = await registry.clientOf(wallet.address)
-        assert.equal(client2.url, clientURL)
-        assert.equal(client2.addr, clientAddress)
+        assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+        assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       }
     })
 
@@ -106,16 +92,12 @@ contract('Registry', function (accounts) {
       const clientAddress = ethers.Wallet.createRandom().address
       const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
       await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client = await registry.clientOf(wallet.address)
-      assert.equal(client.url, clientURL)
-      assert.equal(client.addr, clientAddress)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       const sig2 = await sign.deregister(countryCode, partyID, wallet)
       await registry.deregister(countryCode, partyID, sig2.v, sig2.r, sig2.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), '0x0000000000000000000000000000000000000000')
-      const client2 = await registry.clientOf(wallet.address)
-      assert.equal(client2.url, '')
-      assert.equal(client2.addr, '0x0000000000000000000000000000000000000000')
+      assert.equal(await registry.clientURLOf(countryCode, partyID), '')
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), '0x0000000000000000000000000000000000000000')
     })
 
     it('does not allow deletion of registration data by different wallet', async () => {
@@ -125,19 +107,15 @@ contract('Registry', function (accounts) {
       const clientAddress = ethers.Wallet.createRandom().address
       const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
       await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client = await registry.clientOf(wallet.address)
-      assert.equal(client.url, clientURL)
-      assert.equal(client.addr, clientAddress)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       const sig2 = await sign.deregister(countryCode, partyID, ethers.Wallet.createRandom())
       try {
         await registry.deregister(countryCode, partyID, sig2.v, sig2.r, sig2.s)
       } catch (err) {
         assert.isTrue(err.message.endsWith('Unauthorized to remove this entry from the registry.'))
-        assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-        const client2 = await registry.clientOf(wallet.address)
-        assert.equal(client2.url, clientURL)
-        assert.equal(client2.addr, clientAddress)
+        assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       }
     })
 
@@ -148,16 +126,12 @@ contract('Registry', function (accounts) {
       const clientAddress = ethers.Wallet.createRandom().address
       const sig = await sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, wallet)
       await registry.register(countryCode, partyID, clientURL, clientAddress, sig.v, sig.r, sig.s)
-      assert.equal(await registry.addressOf(countryCode, partyID), wallet.address)
-      const client = await registry.clientOf(wallet.address)
-      assert.equal(client.url, clientURL)
-      assert.equal(client.addr, clientAddress)
+      assert.equal(await registry.clientURLOf(countryCode, partyID), clientURL)
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), clientAddress)
       
       await registry.adminOverwrite(countryCode, partyID, '0x0000000000000000000000000000000000000000', '', '0x0000000000000000000000000000000000000000')
-      assert.equal(await registry.addressOf(countryCode, partyID), '0x0000000000000000000000000000000000000000')
-      const client2 = await registry.clientOf(wallet.address)
-      assert.equal(client2.url, '')
-      assert.equal(client2.addr, '0x0000000000000000000000000000000000000000')
+      assert.equal(await registry.clientURLOf(countryCode, partyID), '')
+      assert.equal(await registry.clientAddressOf(countryCode, partyID), '0x0000000000000000000000000000000000000000')
     })
 
 })

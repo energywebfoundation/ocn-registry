@@ -8,7 +8,7 @@ contract Registry is Ownable {
     string constant private prefix = "\u0019Ethereum Signed Message:\n32";
 
     // links OCPI role to their address
-    mapping(bytes2 => mapping(bytes3 => address)) public addressOf;
+    mapping(bytes2 => mapping(bytes3 => address)) private addressOf;
 
     // describes a client on the OCN
     struct ClientInfo {
@@ -18,7 +18,7 @@ contract Registry is Ownable {
 
     // collection of role identities and the server they are connected to
     // role identity => server information
-    mapping(address => ClientInfo) public clientOf;
+    mapping(address => ClientInfo) private clientOf;
 
     // allows owner of contract to overwrite an entry in the registry
     function adminOverwrite(bytes2 countryCode,
@@ -79,12 +79,14 @@ contract Registry is Ownable {
         clientOf[signer] = ClientInfo(newClientURL, newClientAddress);
     }
 
-    // function addressOf(bytes2 countryCode, bytes3 partyID) public view returns (address partyAddress) {
-    //     partyAddress = roles[countryCode][partyID];
-    // }
+    function clientURLOf(bytes2 countryCode, bytes3 partyID) public view returns (string memory clientURL) {
+        address roleAddress = addressOf[countryCode][partyID];
+        return clientOf[roleAddress].url;
+    }
 
-    // function brokerOf(address partyAddress) public view returns (string memory brokerURL) {
-    //     return brokers[partyAddress];
-    // }
+    function clientAddressOf(bytes2 countryCode, bytes3 partyID) public view returns (address clientAddress) {
+        address roleAddress = addressOf[countryCode][partyID];
+        return clientOf[roleAddress].addr;
+    }
 
 }
