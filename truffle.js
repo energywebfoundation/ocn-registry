@@ -17,7 +17,7 @@ module.exports = {
     },
     docker: {
       protocol: 'http',
-      host: '172.16.239.10',
+      host: '172.16.238.10',
       port: 8544,
       network_id: "*"
     },
