@@ -79,6 +79,10 @@ contract Registry is Ownable {
         clientOf[signer] = ClientInfo(newClientURL, newClientAddress);
     }
 
+    function partyAddressOf(bytes2 countryCode, bytes3 partyID) public view returns (address partyAddress) {
+        return addressOf[countryCode][partyID];
+    }
+
     function clientURLOf(bytes2 countryCode, bytes3 partyID) public view returns (string memory clientURL) {
         address roleAddress = addressOf[countryCode][partyID];
         return clientOf[roleAddress].url;
