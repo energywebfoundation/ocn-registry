@@ -35,7 +35,7 @@ all the implemented functions. The available smart-contracts are:
 Contract transactions (paid for) which change the state of the Registry contract are:
 
 * `register()`
-* `updateClientInfo()`
+* `updateNodeInfo()`
 * `deregister()`
 
 These functions require the state change parameters **plus** the signed state change parameters. You can get the
@@ -44,15 +44,15 @@ latter by calling a `getSigned*` function beforehand, e.g.:
 ```js
 const countryCode = "DE"
 const partyID = "SNC"
-const clientURL = "http://some.client.addr"
-const clientEthAddress = "0x7fA5e01A6f907B707601443929B1289F89994808"
+const nodeURL = "http://some.node.addr"
+const nodeEthAddress = "0x7fA5e01A6f907B707601443929B1289F89994808"
 
-const signature = await snc.getSignedRegisterOrUpdate(countryCode, partyID, clientURL, clientEthAddress))
+const signature = await snc.getSignedRegisterOrUpdate(countryCode, partyID, nodeURL, nodeEthAddress))
 
-const transactionHash = await snc.register(countryCode, partyID, clientURL, clientEthAddress, signature)
+const transactionHash = await snc.register(countryCode, partyID, nodeURL, nodeEthAddress, signature)
 
-// or alternatively, if you wish to change your connected client information:
-const transactionHashAlt = await snc.updateClientInfo(countryCode, partyID, clientURL, clientEthAddress, signature)
+// or alternatively, if you wish to change your connected node information:
+const transactionHashAlt = await snc.updateNodeInfo(countryCode, partyID, nodeURL, nodeEthAddress, signature)
 ```
 
 To "deregister", the same can be done with `getSignedDeregister`:
@@ -68,7 +68,7 @@ To read contract state data, call functions are available through the ethers Reg
 const countryCodeHex = "0x" + Buffer.from(countryCode).toString("hex")
 const partyIDHex = "0x" + Buffer.from(partyID).toString("hex")
 
-const url = await snc.registry.clientURLOf(countryCodeHex, partyIDHex)
+const url = await snc.registry.nodeURLOf(countryCodeHex, partyIDHex)
 ```
 
 Note that this method assumes that both the signer and sender of the transaction are both the same and therefore can
@@ -112,9 +112,9 @@ val signer = Credentials.create(SIGNER_PRIVATE_KEY)
 // compose and hash the transaction parameters
 val countryCode = "DE"
 val partyID = "SNC"
-val clientURL = "http://some.client.addr"
-val clientEthAddress = "0x7fA5e01A6f907B707601443929B1289F89994808"
-val message = countryCode + partyID + clientURL = clientEthAddress
+val nodeURL = "http://some.node.addr"
+val nodeEthAddress = "0x7fA5e01A6f907B707601443929B1289F89994808"
+val message = countryCode + partyID + nodeURL = nodeEthAddress
 val hash = Hash.sha3(message.toByteArray(StandardCharsets.UTF_8))
 
 // sign the transaction parameters with the credentials from above
@@ -124,8 +124,8 @@ val signature = Sign.signPrefixedMessage(hash, signer.ecKeyPair)
 val transaction = registry.register(
         countryCode.toByteArray(),
         partyID.toByteArray(),
-        clientURL,
-        clientEthAddress,
+        nodeURL,
+        nodeEthAddress,
         BigInteger(signature.v),
         signature.r,
         signature.s).sendAsync().get()
