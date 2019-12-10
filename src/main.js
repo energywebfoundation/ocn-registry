@@ -16,10 +16,10 @@ class SnC {
     this.registry = new ethers.Contract(this.registryJson.address, this.registryJson.abi, this.wallet)
   }
 
-  async getSignedRegisterOrUpdate(countryCode, partyID, clientURL, clientAddress) {
+  async getSignedRegisterOrUpdate(countryCode, partyID, nodeURL, nodeAddress) {
     countryCode = '0x' + Buffer.from(countryCode).toString('hex')
     partyID = '0x' + Buffer.from(partyID).toString('hex')
-    return sign.registerOrUpdate(countryCode, partyID, clientURL, clientAddress, this.wallet)
+    return sign.registerOrUpdate(countryCode, partyID, nodeURL, nodeAddress, this.wallet)
   }
 
   async getSignedDeregister(countryCode, partyID) {
@@ -28,12 +28,12 @@ class SnC {
     return sign.deregister(countryCode, partyID, this.wallet)
   }
 
-  async register(countryCode, partyID, clientURL, clientAddress, signature) {
+  async register(countryCode, partyID, nodeURL, nodeAddress, signature) {
     const tx = await this.registry.register(
       '0x' + Buffer.from(countryCode).toString('hex'),
       '0x' + Buffer.from(partyID).toString('hex'),
-      clientURL,
-      clientAddress,
+      nodeURL,
+      nodeAddress,
       signature.v,
       signature.r,
       signature.s,
@@ -43,12 +43,12 @@ class SnC {
     return receipt.transactionHash
   }
 
-  async updateClientInfo(countryCode, partyID, newClientURL, newClientAddress, signature) {
-    const tx = await this.registry.updateClientInfo(
+  async updateNodeInfo(countryCode, partyID, newNodeURL, newNodeAddress, signature) {
+    const tx = await this.registry.updateNodeInfo(
       '0x' + Buffer.from(countryCode).toString('hex'),
       '0x' + Buffer.from(partyID).toString('hex'),
-      newClientURL,
-      newClientAddress,
+      newNodeURL,
+      newNodeAddress,
       signature.v,
       signature.r,
       signature.s,
