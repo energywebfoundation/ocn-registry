@@ -23,7 +23,7 @@ module.exports = {
     volta: {
       provider: () => new HDWalletProvider(process.env.VOLTA_PKEY, "http://35.178.1.16/"),
       network_id: '73799',
-      gasPrice: 1
+      gasPrice: 100
     }
   }
 }
