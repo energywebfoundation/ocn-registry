@@ -13,8 +13,40 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-const Registry = artifacts.require('Registry');
 
-module.exports = function (deployer) {
-    deployer.deploy(Registry);
-};
+export interface Node {
+    operator: string
+    url: string
+}
+
+export interface PartyDetails {
+    countryCode: string
+    partyId: string
+    address: string
+    roles: Role[]
+    modules: { 
+        sender: Module[]
+        receiver: Module[]
+    }
+    node: Node
+}
+
+export enum Role {
+    CPO,
+    EMSP,
+    HUB,
+    NAP,
+    NSP,
+    OTHER,
+    SCSP
+}
+
+export enum Module {
+    cdrs,
+    chargingprofiles,
+    commands,
+    locations,
+    sessions,
+    tariffs,
+    tokens
+}
