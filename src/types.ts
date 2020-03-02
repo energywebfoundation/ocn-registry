@@ -13,26 +13,40 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-const HDWalletProvider = require("truffle-hdwallet-provider")
 
-const MNEMONIC = 'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat'
-
-module.exports = {
-  networks: {
-    development: {
-      host: 'localhost',
-      port: 8544,
-      network_id: '9',
-      gas: 8000000
-    },
-    volta: {
-      protocol: 'http',
-      host: '35.178.1.16',
-      port: 80,
-      network_id: '73799',
-      gasPrice: 1
-    }
-  }
+export interface Node {
+    operator: string
+    url: string
 }
 
+export interface PartyDetails {
+    countryCode: string
+    partyId: string
+    address: string
+    roles: Role[]
+    modules: { 
+        sender: Module[]
+        receiver: Module[]
+    }
+    node: Node
+}
 
+export enum Role {
+    CPO,
+    EMSP,
+    HUB,
+    NAP,
+    NSP,
+    OTHER,
+    SCSP
+}
+
+export enum Module {
+    cdrs,
+    chargingprofiles,
+    commands,
+    locations,
+    sessions,
+    tariffs,
+    tokens
+}

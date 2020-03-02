@@ -1,0 +1,12 @@
+image: node:10
+
+pipelines:
+    default:
+        - step:
+            caches:
+              - node
+            script: # run ganache in the background and launch tests
+              - npm install
+              - npm run build
+              - npm run ganache > /dev/null &
+              - npm test

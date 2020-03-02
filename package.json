@@ -1,6 +1,6 @@
 {
-  "name": "@shareandcharge/registry",
-  "version": "0.2.0",
+  "name": "@shareandcharge/ocn-registry",
+  "version": "1.0.0",
   "description": "Share & Charge registry smart contracts",
   "directories": {
     "test": "test"
@@ -8,14 +8,16 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "main.js",
+  "main": "dist/registry.js",
+  "bin": {
+    "ocn-registry": "dist/index.js"
+  },
   "files": [
     "*.json",
-    "*.js",
-    "*.d.ts",
-    "lib/*"
+    "dist/*"
   ],
   "scripts": {
+    "build": "tsc",
     "compile": "truffle compile",
     "test": "rm -Rf build && truffle test",
     "lint": "solium -d contracts",
@@ -23,34 +25,37 @@
     "migrate": "truffle migrate",
     "migrate-docker": "truffle migrate --network=docker",
     "ganache": "ganache-cli -m \"candy maple cake sugar pudding cream honey rich smooth crumble sweet treat\" --port 8544 --accounts 20 --networkId=9 --gasLimit=10000000",
-    "publish-dev": "truffle migrate && node bin/publish.js",
-    "publish-poa": "truffle migrate --network=poa_hd && node bin/publish.js poa",
-    "publish-tobalaba": "truffle migrate --network=tobalaba && node bin/publish.js tobalaba",
-    "publish-production": "node bin/publish.js production"
+    "publish-dev": "truffle migrate && node bin/publish.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://bitbucket.org:shareandcharge/registry.git"
   },
   "author": "Share & Charge foundation",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://bitbucket.org/shareandcharge/registry/issues?status=new&status=open"
   },
   "homepage": "https://bitbucket.org/shareandcharge/registry",
   "devDependencies": {
-    "ganache-cli": "^6.8.2",
+    "@types/chai": "^4.2.9",
+    "@types/mocha": "^7.0.1",
+    "@types/yargs": "^15.0.3",
+    "ganache-cli": "^6.9.1",
     "mkdirp": "^0.5.1",
-    "openzeppelin-solidity": "^2.1.1",
-    "solium": "^1.2.4",
-    "truffle": "^5.0.1",
-    "truffle-contract": "^4.0.1",
-    "truffle-flattener": "^1.3.0",
-    "truffle-hdwallet-provider": "^1.0.2"
+    "openzeppelin-solidity": "^2.5.0",
+    "solium": "^1.2.5",
+    "truffle": "^5.1.12",
+    "truffle-contract": "^4.0.31",
+    "truffle-flattener": "^1.4.2",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.5"
   },
   "dependencies": {
     "bignumber.js": "^8.0.2",
-    "ethers": "^4.0.20",
-    "web3-utils": "^1.0.0-beta.37"
+    "ethers": "^4.0.44",
+    "web3-utils": "^1.2.6",
+    "yargs": "^15.1.0"
   }
 }
