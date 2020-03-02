@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Open Charging Network Registry
 
 Registry smart contract for OCN Node operator and OCPI party listings. For Ethereum-based networks.
@@ -213,9 +214,22 @@ To list a party, the following information is required:
 
 The following commands can be used to both create and update the party information.
 
+=======
+# Open Charge Network (OCN) Registry Smart Contracts
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a24c1584300a4c758d8da109a3e6cb80)](https://www.codacy.com?utm_source=bitbucket.org&amp;utm_medium=referral&amp;utm_content=shareandcharge/registry&amp;utm_campaign=Badge_Grade)
+
+Repository of smart contracts written in Solidity for Ethereum-based networks, used for the decentralized Registry of the Open Charging Network.
+
+## Usage
+
+Provided is a class `SnC` in `./src/main.js` which simplifies the work with the smart-contracts.
+The constructor takes 3 parameters:
+>>>>>>> master
 
 #### Scenario 1: party_id with single role
 
+<<<<<<< HEAD
 Using a direct transaction:
 ```
 ocn-registry set-party -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
@@ -297,6 +311,15 @@ Raw transactions can also be used:
 ```
 ocn-registry set-modules-raw
 ```
+=======
+The class uses [ethers](https://docs.ethers.io/ethers.js/html/) for communicating 
+with the node. 
+
+The SnC class provides access to the smart contracts in the form of instantiated objects which expose 
+all the implemented functions. The available smart-contracts are:
+
+* registry - a list of parties in the network and the OCN Client that they are connected to.
+>>>>>>> master
 
 ### De-listing a party
 
