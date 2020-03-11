@@ -78,7 +78,7 @@ npx ts-node src --help
 #### Using the npm package
 
 ```
-npm install -g @shareandcharge/registry
+npm install -g @shareandcharge/ocn-registry
 ocn-registry --help
 ```
 
