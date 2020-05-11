@@ -13,8 +13,21 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-const Registry = artifacts.require('Registry');
+const Registry = artifacts.require("Registry")
+const Permissions = artifacts.require("Permissions")
 
-module.exports = function (deployer) {
-    deployer.deploy(Registry);
+module.exports = function (deployer, network) {
+    if (network === "development" || network === "docker") {
+        // always deploy both new contracts
+        deployer.deploy(Registry)
+            .then(() => deployer.deploy(Permissions, Registry.address))
+    } else if (network === "volta") {
+        // only deploy new Permissions contract using previously deployed Registry address (for now)
+        const registryAddress = process.env.REGISTRY_ADDRESS
+        if (!registryAddress) {
+            throw Error("No REGISTRY_ADDRESS env var given")
+        }
+        console.log("Permissions contract using Registry at", registryAddress)
+        deployer.deploy(Permissions, registryAddress);
+    }
 };

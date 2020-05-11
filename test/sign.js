@@ -37,10 +37,16 @@ async function deletePartyRaw(wallet) {
   return sign(txMsg, wallet)
 }
 
+async function setAppRaw(name, url, permissions, wallet) {
+  const txMsg = utils.soliditySha3(name, url, ...permissions)
+  return sign(txMsg, wallet)
+}
+
 module.exports = {
   setNodeRaw,
   deleteNodeRaw,
   setPartyRaw,
   setPartyModulesRaw,
-  deletePartyRaw
+  deletePartyRaw,
+  setAppRaw
 }
