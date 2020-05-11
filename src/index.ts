@@ -18,9 +18,10 @@
 
 import yargs from "yargs"
 import { Registry } from "./registry"
-import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder } from "./builders"
-import { PartyDetails, Role, Module } from "./types"
+import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder } from "./builders"
+import { PartyDetails, Role, Module, Permission } from "./types"
 import { networks } from "./networks"
+import { Permissions } from "./permissions"
 
 yargs
     .option("network", {
@@ -136,6 +137,31 @@ yargs
         const spender = process.env.SPENDER || args.spender
         const registry = new Registry(args.network, spender)
         const result = await registry.deletePartyRaw(signer as string)
+        console.log(result)
+    })
+    .command("get-app <owner>", "Retrieve app details and required permissions", () => {}, async (args) => {
+        const permissions = new Permissions(args.network)
+        const result = await permissions.getApp(args.owner as string)
+        console.log(result || "Owner has no App listed")
+    })
+    .command("list-apps", "List all registered apps", () => {}, async (args) => {
+        const permissions = new Permissions(args.network)
+        const result = await permissions.getAllApps()
+        console.log(result)
+    })
+    .command("set-app", "Add or update an OCN App's details", setAppBuilder, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const permissions = new Permissions(args.network, signer)
+        const needs: Permission[] = Array.from(new Set(args.permissions as string[])).map((permission) => Permission[permission])
+        const result = await permissions.setApp(args.name as string, args.url as string, needs)
+        console.log(result)
+    })
+    .command("set-app-raw", "Add or update an OCN App's details via raw transaction", setAppBuilder, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const spender = process.env.SPENDER || args.spender
+        const permissions = new Permissions(args.network, spender)
+        const needs: Permission[] = Array.from(new Set(args.permissions as string[])).map((permission) => Permission[permission])
+        const result = await permissions.setAppRaw(args.name as string, args.url as string, needs, signer as string)
         console.log(result)
     })
     .completion()

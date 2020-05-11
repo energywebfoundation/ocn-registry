@@ -34,14 +34,14 @@ export class Permissions extends ContractWrapper {
      */
     public async getApp(owner: string): Promise<App | undefined> {
         const result = await this.contract.getApp(owner)
-        if (result.permissions.length > 0) {
+        if (result.permissions.length === 0) {
             return
         }
         return {
             owner,
             name: result.name,
             url: result.url,
-            permissions: result.permissions
+            permissions: result.permissions.map((permission) => Permission[permission.toNumber()])
         }
     }
 
@@ -49,7 +49,7 @@ export class Permissions extends ContractWrapper {
      * Get a list of all apps registered
      */
     public async getAllApps(): Promise<App[]> {
-        const owners: string[] = await this.contract.owners()
+        const owners: string[] = await this.contract.getOwners()
         const apps: App[] = []
         for (const owner of owners) {
             const result = await this.getApp(owner)

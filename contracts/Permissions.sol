@@ -94,4 +94,9 @@ contract Permissions {
             permissions = apps[owner].permissions;
     }
 
+    // return list of owners
+    function getOwners() public view returns (address[] memory) {
+        return owners;
+    }
+
 }

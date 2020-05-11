@@ -71,12 +71,33 @@ export const setPartyModulesBuilder = (context: yargs.Argv) => {
             alias: "si",
             array: true,
             choices: ["cdrs", "chargingprofiles", "commands", "locations", "sessions", "tariffs", "tokens"],
-            describe: "OCPI module sender interface implementations"
+            describe: "OCPI module sender interface implementations."
         })
         .option("receiver-interface", {
             alias: "ri",
             array: true, 
             choices: ["cdrs", "chargingprofiles", "commands", "locations", "sessions", "tariffs", "tokens"],
-            describe: "OCPI module receiver interface implementations"
+            describe: "OCPI module receiver interface implementations."
+        })
+}
+
+export const setAppBuilder = (context: yargs.Argv) => {
+    context
+        .option("name", {
+            string: true,
+            default: "",
+            describe: "Name of the App"
+        })
+        .option("url", {
+            alias: "u",
+            string: true,
+            default: "",
+            describe: "Public URL where users can find further information."
+        })
+        .option("permissions", {
+            alias: "p",
+            array: true,
+            choices: ["FORWARD_ALL", "FORWARD_IN", "FORWARD_OUT"],
+            describe: "List of required permissions that the App needs."
         })
 }
