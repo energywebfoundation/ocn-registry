@@ -50,3 +50,17 @@ export enum Module {
     tariffs,
     tokens
 }
+
+export interface App {
+    name: string
+    url: string
+    permissions: Permission[]
+    owner: string
+}
+
+// examples; not full list
+export enum Permission {
+    FORWARD_ALL,
+    FORWARD_IN,
+    FORWARD_OUT
+}

@@ -17,48 +17,17 @@
 import { ethers } from "ethers";
 import { toHex } from "web3-utils"
 import { URL } from "url"
-import { networks } from "./networks";
 import * as sign from "./lib/sign";
 import * as types from "./types"
+import { ContractWrapper } from "./contract-wrapper";
 
 /**
  * Registry contract wrapper
  */
-export class Registry {
+export class Registry extends ContractWrapper {
 
-    private provider: ethers.providers.JsonRpcProvider
-    private wallet?: ethers.Wallet
-    private registry: ethers.Contract
-
-    /**
-     * Read/write mode of contract wrapper. If signer is provided in constructor arguments,
-     * mode will be read+write, else just read.
-     */
-    public mode: "r" | "r+w"
-
-    /**
-     * @param environment configure contract wrapper to use pre-configured network (see networks.ts for full list).
-     * @param signer the private key of the signer, used in write operations.
-     */
     constructor(environment: string, signer?: string) {
-        if (!networks[environment]) {
-            throw new Error(`Option \"${environment}\" not found in configured networks.`)
-        }
-        const provider = networks[environment].provider
-        const contract = networks[environment].contract
-
-        console.log(`connecting to ${provider.protocol}://${provider.host}:${provider.port}`)
-
-        this.provider = new ethers.providers.JsonRpcProvider(`${provider.protocol}://${provider.host}:${provider.port}`)
-
-        if (signer) {
-            this.wallet = new ethers.Wallet(signer, this.provider)
-            this.mode = "r+w"
-        } else {
-            this.mode = "r"
-        }
-    
-        this.registry = new ethers.Contract(contract.address, contract.abi, this.wallet || this.provider)
+        super("Registry", environment, signer)
     }
 
     /**
@@ -68,7 +37,7 @@ export class Registry {
      */
     public async getNode(operator: string): Promise<string | undefined> {
         this.verifyAddress(operator)
-        const node = await this.registry.getNode(operator)
+        const node = await this.contract.getNode(operator)
         return node || undefined
     }
 
@@ -83,10 +52,10 @@ export class Registry {
      *   ]
      */
     public async getAllNodes(): Promise<Array<types.Node>> {
-        const operators = await this.registry.getNodeOperators()
+        const operators = await this.contract.getNodeOperators()
         const nodes: Array<types.Node> = []
         for (const operator of operators) {
-            const url = await this.registry.getNode(operator)
+            const url = await this.contract.getNode(operator)
             if (url) {
                 nodes.push({ operator, url })
             }
@@ -102,7 +71,7 @@ export class Registry {
     public async setNode(domain: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
         const url = new URL(domain)
-        const tx = await this.registry.setNode(url.origin)
+        const tx = await this.contract.setNode(url.origin)
         await tx.wait()
         return tx
     }
@@ -117,7 +86,7 @@ export class Registry {
         this.verifyWritable()
         const wallet = new ethers.Wallet(signer)
         const sig = await sign.setNodeRaw(domain, wallet)
-        const tx = await this.registry.setNodeRaw(wallet.address, domain, sig.v, sig.r, sig.s)
+        const tx = await this.contract.setNodeRaw(wallet.address, domain, sig.v, sig.r, sig.s)
         await tx.wait()
         return tx
     }
@@ -127,7 +96,7 @@ export class Registry {
      */
     public async deleteNode(): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
-        const tx = await this.registry.deleteNode()
+        const tx = await this.contract.deleteNode()
         await tx.wait()
         return tx
     }
@@ -141,7 +110,7 @@ export class Registry {
         this.verifyWritable()
         const wallet = new ethers.Wallet(signer)
         const sig = await sign.deleteNodeRaw(wallet)
-        const tx = await this.registry.deleteNodeRaw(wallet.address, sig.v, sig.r, sig.s)
+        const tx = await this.contract.deleteNodeRaw(wallet.address, sig.v, sig.r, sig.s)
         await tx.wait()
         return tx
     }
@@ -152,7 +121,7 @@ export class Registry {
      * @param address the wallet address of the party
      */
     public async getPartyByAddress(address: string): Promise<types.PartyDetails | undefined> {
-        const details = await this.registry.getPartyDetailsByAddress(address)
+        const details = await this.contract.getPartyDetailsByAddress(address)
         const result = this.toPartyDetails(Object.assign({ partyAddress: address }, details))
         return result.node.operator !== "0x0000000000000000000000000000000000000000" ? result : undefined
     }
@@ -169,7 +138,7 @@ export class Registry {
         const country = this.toHex(countryCode)
         const id = this.toHex(partyId)
 
-        const details = await this.registry.getPartyDetailsByOcpi(country, id)
+        const details = await this.contract.getPartyDetailsByOcpi(country, id)
         const result = this.toPartyDetails(Object.assign({ countryCode: country, partyId: id }, details))
         return result.node.operator !== "0x0000000000000000000000000000000000000000" ? result : undefined
     }
@@ -178,10 +147,10 @@ export class Registry {
      * Get a list of all registered OCPI parties on the network.
      */
     public async getAllParties(): Promise<types.PartyDetails[]> {
-        const partyAddresses = await this.registry.getParties()
+        const partyAddresses = await this.contract.getParties()
         const details: types.PartyDetails[] = []
         for (const address of partyAddresses) {
-            const result = await this.registry.getPartyDetailsByAddress(address)
+            const result = await this.contract.getPartyDetailsByAddress(address)
             if (result.operatorAddress !== "0x0000000000000000000000000000000000000000") {
                 details.push(this.toPartyDetails(Object.assign({ partyAddress: address }, result)))
             }
@@ -203,7 +172,7 @@ export class Registry {
         this.verifyStringLen(partyId, 3)
         this.verifyAddress(operator)
         
-        const tx = await this.registry.setParty(this.toHex(countryCode), this.toHex(partyId), roles, operator)
+        const tx = await this.contract.setParty(this.toHex(countryCode), this.toHex(partyId), roles, operator)
         await tx.wait()
         return tx
     }
@@ -230,7 +199,7 @@ export class Registry {
 
         const wallet = new ethers.Wallet(signer);
         const sig = await sign.setPartyRaw(country, id, roles, operator, wallet)
-        const tx = await this.registry.setPartyRaw(wallet.address, country, id, roles, operator, sig.v, sig.r, sig.s)
+        const tx = await this.contract.setPartyRaw(wallet.address, country, id, roles, operator, sig.v, sig.r, sig.s)
         await tx.wait()
         return tx
     }
@@ -244,7 +213,7 @@ export class Registry {
      */
     public async setPartyModules(sender: types.Module[], receiver: types.Module[]): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
-        const tx = await this.registry.setPartyModules(sender, receiver)
+        const tx = await this.contract.setPartyModules(sender, receiver)
         await tx.wait()
         return tx
     }
@@ -262,7 +231,7 @@ export class Registry {
         this.verifyWritable()
         const wallet = new ethers.Wallet(signer)
         const sig = await sign.setPartyModulesRaw(sender, receiver, wallet)
-        const tx = await this.registry.setPartyModulesRaw(wallet.address, sender, receiver, sig.v, sig.r, sig.s)
+        const tx = await this.contract.setPartyModulesRaw(wallet.address, sender, receiver, sig.v, sig.r, sig.s)
         await tx.wait()
         return tx
     }
@@ -272,7 +241,7 @@ export class Registry {
      */
     public async deleteParty(): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
-        const tx = await this.registry.deleteParty()
+        const tx = await this.contract.deleteParty()
         await tx.wait()
         return tx
     }
@@ -286,7 +255,7 @@ export class Registry {
         this.verifyWritable()
         const wallet = new ethers.Wallet(signer)
         const sig = await sign.deletePartyRaw(wallet)
-        const tx = await this.registry.deletePartyRaw(wallet.address, sig.v, sig.r, sig.s)
+        const tx = await this.contract.deletePartyRaw(wallet.address, sig.v, sig.r, sig.s)
         await tx.wait()
         return tx
     }
@@ -295,20 +264,6 @@ export class Registry {
     private verifyStringLen(str: string, len: number): void {
         if (str.length !== len) {
             throw Error(`Invalid string length. Wanted ${len}, got "${str}" (${str.length})`)
-        }
-    }
-
-    private verifyAddress(address: string): void {
-        try { 
-            ethers.utils.getAddress(address)
-        } catch (err) {
-            throw Error(`Invalid address. Expected Ethereum address, got "${address}".`)
-        }
-    }
-
-    private verifyWritable(): void {
-        if (this.mode !== "r+w") {
-            throw Error("No signer provided. Unable to send transaction.")
         }
     }
 

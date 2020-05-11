@@ -23,7 +23,7 @@ const config = require('../truffle').networks[network]
 const provider = config.provider ? config.provider() : new Web3.providers.HttpProvider(`http://${config.host}:${config.port}`)
 const web3 = new Web3(provider)
 
-const contractNames = ['Registry']
+const contractNames = ['Registry', 'Permissions']
 
 const isDevelopment = network === 'development'
 const isProduction = network === 'production'

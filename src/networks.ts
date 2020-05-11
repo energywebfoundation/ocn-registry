@@ -23,7 +23,7 @@ export const networks = {
             network_id: '9',
             gas: 8000000
         },
-        contract: require("../contract.defs.local.json").Registry
+        contracts: require("../contract.defs.local.json")
 	},
 	volta: {
         provider: {
@@ -33,7 +33,7 @@ export const networks = {
             network_id: '73799',
             gasPrice: 100
         },
-        contract: require("../contract.defs.volta.json").Registry
+        contracts: require("../contract.defs.volta.json")
     },
     prod: {
         provider: {
@@ -43,6 +43,6 @@ export const networks = {
             network_id: '246',
             gasPrice: 100
         },
-        contract: require("../contract.defs.prod.json").Registry
+        contracts: require("../contract.defs.prod.json")
     }
 }

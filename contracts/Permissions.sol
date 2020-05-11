@@ -83,6 +83,7 @@ contract Permissions {
         setApp(signer, name, url, permissions);
     }
 
+    // read app data
     function getApp(address owner) public view returns (
             string memory name,
             string memory url,
