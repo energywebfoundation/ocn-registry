@@ -101,3 +101,10 @@ export const setAppBuilder = (context: yargs.Argv) => {
             describe: "List of required permissions that the App needs."
         })
 }
+
+export const providerBuilder = (context: yargs.Argv) => {
+    context
+        .positional("provider", {
+            describe: "Address of the App provider the agreement should be for"
+        })
+}

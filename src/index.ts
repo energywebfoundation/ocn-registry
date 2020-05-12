@@ -18,7 +18,7 @@
 
 import yargs from "yargs"
 import { Registry } from "./registry"
-import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder } from "./builders"
+import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder, providerBuilder } from "./builders"
 import { PartyDetails, Role, Module, Permission } from "./types"
 import { networks } from "./networks"
 import { Permissions } from "./permissions"
@@ -139,10 +139,10 @@ yargs
         const result = await registry.deletePartyRaw(signer as string)
         console.log(result)
     })
-    .command("get-app <owner>", "Retrieve app details and required permissions", () => {}, async (args) => {
+    .command("get-app <provider>", "Retrieve app details and required permissions", providerBuilder, async (args) => {
         const permissions = new Permissions(args.network)
-        const result = await permissions.getApp(args.owner as string)
-        console.log(result || "Owner has no App listed")
+        const result = await permissions.getApp(args.provider as string)
+        console.log(result || "Provider has no App listed")
     })
     .command("list-apps", "List all registered apps", () => {}, async (args) => {
         const permissions = new Permissions(args.network)
@@ -162,6 +162,24 @@ yargs
         const permissions = new Permissions(args.network, spender)
         const needs: Permission[] = Array.from(new Set(args.permissions as string[])).map((permission) => Permission[permission])
         const result = await permissions.setAppRaw(args.name as string, args.url as string, needs, signer as string)
+        console.log(result)
+    })
+    .command("get-agreements <user>", "Lists the apps used by a given user", () => {}, async (args) => {
+        const permissions = new Permissions(args.network)
+        const result = await permissions.getUserAgreements(args.user as string)
+        console.log(result)
+    })
+    .command("set-agreement <provider>", "Create an agreement with a particular app provider", providerBuilder, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const permissions = new Permissions(args.network, signer)
+        const result = await permissions.createAgreement(args.provider as string)
+        console.log(result)
+    })
+    .command("set-agreement-raw <provider>", "Create an agreement with a particular app provider via raw transaction", providerBuilder, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const spender = process.env.SPENDER || args.spender
+        const permissions = new Permissions(args.network, spender)
+        const result = await permissions.createAgreementRaw(args.provider as string, signer as string)
         console.log(result)
     })
     .completion()

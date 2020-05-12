@@ -55,7 +55,7 @@ export interface App {
     name: string
     url: string
     permissions: Permission[]
-    owner: string
+    provider: string
 }
 
 // examples; not full list
