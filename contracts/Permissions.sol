@@ -24,18 +24,39 @@ contract Permissions {
 
     Registry private registry;
 
+    /**
+     * EVENTS
+     */
+    event AppUpdate(
+        string name,
+        string url,
+        uint[] permissions,
+        address provider
+    );
+
+    event AppAgreement(
+        address user,
+        address provider
+    );
+    
+
+    /**
+     * APP PROVIDERS
+     */
+
     struct App {
         string name;
         string url;
         uint[] permissions;
     }
 
-    address[] public owners;
+    address[] public providers;
 
-    // stores unique owners so we don't need to iterate over the array above to find out
-    mapping(address => bool) private uniqueOwners;
+    // stores unique providers/owners so we don't need to iterate over the array
+    // above to check existence
+    mapping(address => bool) private uniqueProviders;
 
-    // app storage linked to a particular owner (must have a registry party listing)
+    // app storage linked to a particular provider (must have a registry party listing)
     mapping(address => App) private apps;
 
     // create registry dependency using its deployed address
@@ -49,19 +70,22 @@ contract Permissions {
      * @param url optional public url for more information
      * @param permissions array of permissions required by the app
      */
-    function setApp(address owner, string memory name, string memory url, uint[] memory permissions) private  {
+    function setApp(address provider, string memory name, string memory url, uint[] memory permissions) private  {
         // get the node operator of an OCPI party to determine if they are already in the Registry
-        (address operator, ) = registry.getOperatorByAddress(owner);
-        require(operator != address(0), "Trying to register an app without party listing in Registry");
+        (address operator, ) = registry.getOperatorByAddress(provider);
+        require(operator != address(0), "Trying to register an app without party listing in Registry.");
+        require(permissions.length > 0, "No permissions given.");
 
         // add or overwrite app list entry for sender
-        apps[owner] = App(name, url, permissions);
+        apps[provider] = App(name, url, permissions);
 
         // add to unique owners list if not seen before (iterating over an array is costly)
-        if (uniqueOwners[owner] == false) {
-            owners.push(owner);
-            uniqueOwners[owner] = true;
+        if (uniqueProviders[provider] == false) {
+            providers.push(provider);
+            uniqueProviders[provider] = true;
         }
+
+        emit AppUpdate(name, url, permissions, provider);
     }
 
     // set App using msg.sender as owner (direct transaction)
@@ -84,19 +108,53 @@ contract Permissions {
     }
 
     // read app data
-    function getApp(address owner) public view returns (
+    function getApp(address provider) public view returns (
             string memory name,
             string memory url,
             uint[] memory permissions
         ) {
-            name = apps[owner].name;
-            url = apps[owner].url;
-            permissions = apps[owner].permissions;
+            name = apps[provider].name;
+            url = apps[provider].url;
+            permissions = apps[provider].permissions;
     }
 
     // return list of owners
-    function getOwners() public view returns (address[] memory) {
-        return owners;
+    function getProviders() public view returns (address[] memory) {
+        return providers;
+    }
+
+    /**
+     * APP USERS
+     */
+
+    // stores agreements (user => provider => true/false)
+    mapping(address => mapping(address => bool)) public agreements;
+
+    /**
+     * Binds an app user to provider, granting the app any given permissions
+     * @param user the app user addresss
+     * @param provider the app provider address (owner of the app)
+     */
+    function createAgreement(address user, address provider) private {
+        (address operator, ) = registry.getOperatorByAddress(user);
+        require(operator != address(0), "App user has no party listing in Registry.");
+        require(uniqueProviders[provider] == true, "Provider has no registered App.");
+        require(agreements[user][provider] == false, "Agreement already made between user and provider.");
+        agreements[user][provider] = true;
+
+        emit AppAgreement(user, provider);
+    }
+
+    // create agreement using direct transaction
+    function createAgreement(address provider) public {
+        createAgreement(msg.sender, provider);
+    }
+
+    // create agreement using raw transaction
+    function createAgreementRaw(address provider, uint8 v, bytes32 r, bytes32 s) public {
+        bytes32 paramHash = keccak256(abi.encodePacked(provider));
+        address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
+        createAgreement(signer, provider);
     }
 
 }

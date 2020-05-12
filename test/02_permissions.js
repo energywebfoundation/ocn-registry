@@ -26,10 +26,14 @@ contract('Permissions', function (accounts) {
     await registry.setNode("http://localhost:8080", { from: accounts[1] })
 
     // add the wallet above to the registry
-    const country = toHex("DE")
-    const id = toHex("ACB")
-    const sig = await sign.setPartyRaw(country, id, [5], accounts[1], wallet)
-    await registry.setPartyRaw(wallet.address, country, id, [5], accounts[1], sig.v, sig.r, sig.s)
+    const parties = [{
+      country: toHex("DE"), id: toHex("ACB"),
+      country: toHex("CH"), id: toHex("DEF")
+    }]
+    for (const party of parties) {
+      const sig = await sign.setPartyRaw(party.country, party.id, [5], accounts[1], wallet)
+      await registry.setPartyRaw(wallet.address, party.country, party.id, [5], accounts[1], sig.v, sig.r, sig.s)
+    }
   })
 
   it("should add app", async () => {
@@ -67,6 +71,21 @@ contract('Permissions', function (accounts) {
     assert.equal(actual.name, name)
     assert.equal(actual.url, url)
     assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
+  })
+
+  it("should create agreement", async () => {
+    await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], {from: accounts[2]})
+    await registry.setParty(toHex("CH"), toHex("CPO"), [0], accounts[1], {from: accounts[3]})
+    await permissions.setApp("voiceIn", "https://in.voice.ni", [1], {from: accounts[2]})
+    await permissions.createAgreement(accounts[2], {from: accounts[3]})
+  })
+
+  it("should create agreement via raw transaction", async () => {
+    await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], {from: accounts[2]})
+    await permissions.setApp("voiceIn", "https://in.voice.ni", [1], {from: accounts[2]})
+
+    const sig = await sign.createAgreementRaw(accounts[2], wallet)
+    await permissions.createAgreementRaw(accounts[2], sig.v, sig.r, sig.s)
   })
 
 })
