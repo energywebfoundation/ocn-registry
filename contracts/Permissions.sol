@@ -128,7 +128,10 @@ contract Permissions {
      */
 
     // stores agreements (user => provider => true/false)
-    mapping(address => mapping(address => bool)) public agreements;
+    mapping(address => mapping(address => bool)) private userAgreements;
+
+    // stores agreement list (user => provider[])
+    mapping(address => address[]) private providersOf;
 
     /**
      * Binds an app user to provider, granting the app any given permissions
@@ -139,8 +142,9 @@ contract Permissions {
         (address operator, ) = registry.getOperatorByAddress(user);
         require(operator != address(0), "App user has no party listing in Registry.");
         require(uniqueProviders[provider] == true, "Provider has no registered App.");
-        require(agreements[user][provider] == false, "Agreement already made between user and provider.");
-        agreements[user][provider] = true;
+        require(userAgreements[user][provider] == false, "Agreement already made between user and provider.");
+        userAgreements[user][provider] = true;
+        providersOf[user].push(provider);
 
         emit AppAgreement(user, provider);
     }
@@ -155,6 +159,11 @@ contract Permissions {
         bytes32 paramHash = keccak256(abi.encodePacked(provider));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
         createAgreement(signer, provider);
+    }
+
+    // read providers of a given user
+    function getUserAgreements(address user) public view returns (address[] memory) {
+        return providersOf[user];
     }
 
 }

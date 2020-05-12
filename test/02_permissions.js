@@ -78,6 +78,8 @@ contract('Permissions', function (accounts) {
     await registry.setParty(toHex("CH"), toHex("CPO"), [0], accounts[1], {from: accounts[3]})
     await permissions.setApp("voiceIn", "https://in.voice.ni", [1], {from: accounts[2]})
     await permissions.createAgreement(accounts[2], {from: accounts[3]})
+    const actual = await permissions.getUserAgreements(accounts[3])
+    assert.deepEqual(actual, [accounts[2]])
   })
 
   it("should create agreement via raw transaction", async () => {
@@ -86,6 +88,9 @@ contract('Permissions', function (accounts) {
 
     const sig = await sign.createAgreementRaw(accounts[2], wallet)
     await permissions.createAgreementRaw(accounts[2], sig.v, sig.r, sig.s)
+
+    const actual = await permissions.getUserAgreements(wallet.address)
+    assert.deepEqual(actual, [accounts[2]])
   })
 
 })
