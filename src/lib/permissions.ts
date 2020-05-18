@@ -17,7 +17,7 @@
 import { ethers } from "ethers";
 import { ContractWrapper } from "./contract-wrapper";
 import { App, Permission } from "./types";
-import { setAppRaw, createAgreementRaw } from "./lib/sign"
+import { setAppRaw, createAgreementRaw } from "./sign"
 
 /**
  * Permissions contract wrapper

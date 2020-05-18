@@ -17,11 +17,11 @@
 */
 
 import yargs from "yargs"
-import { Registry } from "./registry"
-import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder, providerBuilder } from "./builders"
-import { PartyDetails, Role, Module, Permission } from "./types"
+import { Registry } from "./lib/registry"
+import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder, providerBuilder } from "./cli/builders"
+import { PartyDetails, Role, Module, Permission } from "./lib/types"
 import { networks } from "./networks"
-import { Permissions } from "./permissions"
+import { Permissions } from "./lib/permissions"
 
 yargs
     .option("network", {

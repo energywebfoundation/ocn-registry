@@ -1,12 +1,12 @@
 # Open Charging Network Registry
 
-Registry smart contract for OCN Node operator and OCPI party listings. For Ethereum-based networks.
+Decentralized Registry smart contracts for Node operators, OCPI party and App providers. For Ethereum-based networks.
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a24c1584300a4c758d8da109a3e6cb80)](https://www.codacy.com?utm_source=bitbucket.org&amp;utm_medium=referral&amp;utm_content=shareandcharge/registry&amp;utm_campaign=Badge_Grade)
 
 ## Pre-amble
 
-There are a few concepts which first need to be explained. The Registry smart contract works on Ethereum-based 
+There are a few concepts which first need to be explained. The Registry smart contracts works on Ethereum-based 
 blockchains. That might be [ganache](https://github.com/trufflesuite/ganache-cli) if running a local development 
 blockchain, or the pre-production or production chain of the 
 [Energy Web Foundation's blockchain](https://energyweb.atlassian.net/wiki/spaces/EWF/overview). These chains use 
@@ -25,7 +25,7 @@ blockchain network using a different, funded keypair.
 Therefore, in "direct" transactions, the signer and spender are one, named just the "signer". In contrast, in
 raw transactions, the "signer" is the data owner, and the "spender" is the one paying for the transaction.
 
-### Node Operators and OCPI Parties
+### Node Operators, OCPI Parties and App providers
 
 The principle behind the registry is that the nodes, comprising the Open Charging Network, need a way of discovering 
 counterparties they are not directly connected to. This works in two stages: OCN Node operators (i.e. administrators) 
@@ -35,7 +35,18 @@ Providers) to link their services to a registered node.
 Note that the registry listing must be done by the OCPI party before an OCN Node accepts their credentials 
 registration, so that the OCN Node can ensure the party has correctly linked themselves to that node in the registry. 
 
-#### Example steps:
+An OCN App is an OCPI party that requires additional permissions from their customers. We make this distinction
+from other "Apps" that might only require customers to send OCPI messages (including custom OCPI modules) directly.
+Such permissions could include the forwarding of session or charge detail record data, for example in a payment
+app. Once a customer/user has agreed to the App's permissions, the OCN Node tied to the customer will automate
+any such required permissions, lessening the cost of integration with an App.
+
+OCN Apps are first and foremost OCPI parties - they must be listed in the Registry smart contract. To be granted
+the aforementioned permissions, such a party must then list their app and the permissions required in a separate
+smart contract, entitled "Permissions". Thereafter, a user can make their agreement explicit in the same smart
+contract.
+
+#### OCPI Party connection steps:
 
 1. Operator signs a transaction stating they run the OCN Node on domain `https://node.ocn.org`. The address of their
 wallet (`0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4`), used to sign the transaction, now points to the domain name. 
@@ -72,7 +83,7 @@ Clone this repository or install the registry npm package:
 git clone https://bitbucket.org/shareandcharge/ocn-registry.git
 cd ocn-registry
 npm install
-npx ts-node src --help
+npx ts-node src/cli --help
 ```
 
 #### Using the npm package
@@ -312,6 +323,52 @@ And with raw transaction:
 ocn-registry delete-party-raw
 ```
 
+### Get all Apps' details
+
+```
+ocn-registry list-apps
+```
+
+### Get a specific App's details
+
+Use the positional argument for the provider of the App: the Ethereum address of the owner.
+
+```
+ocn-registry get-app {{PROVIDER}}
+```
+
+### List an App
+
+Ensure that before adding an App to the Registry, the owner of the App is listed as an OCPI party.
+
+To add an App, use the `set-app` command. Note that the name and URL are optional - their aim is
+to provide more information for potential customers:
+
+```
+ocn-registry set-app --name {{NAME_OF_APP}} --url {{SOME_URL}} --permissions FORWARD_SENDER
+```
+
+Full list of permissions coming soon.
+
+### Get App agreements for a user
+
+To list all agreements for a particular user:
+
+```
+ocn-registry get-agreements {{USER}}
+```
+
+Where the positional user argument refer's to an OCPI party's identity (Ethereum address). 
+
+### Agree to an App permissions
+
+As an App user, agree to an App's permissions using the `set-agreement` command. The positional
+provider argument is the App owner's Ethereum address (their identity on the OCN).
+
+```
+ocn-registry set-agreement {{PROVIDER}}
+```
+
 ---
 
 ## [TypeScript Library](#typescript-library)
@@ -325,15 +382,16 @@ In your project source file, import the registry:
 TypeScript:
 
 ```ts
-import { Registry } from "@shareandcharge/registry"
+import { Registry, Permissions } from "@shareandcharge/registry"
 ```
 JavaScript:
 
 ```js
 const Registry = require("@shareandcharge/registry").Registry
+const Permissions = require("@shareandcharge/registry").Permissions
 ```
 
-Then, instantiate the Registry class with the environment (`"local"` or `"volta"`). Optionally set the signer to gain
+Then, instantiate each class with the required environment (`"local"` or `"volta"`). Optionally set the signer to gain
 access to write methods on the contract:
 
 ```ts
@@ -341,8 +399,8 @@ const registryReadOnly = new Registry("local")
 console.log(registryReadOnly.mode)
 // "r"
 
-const registryReadWrite = new Registry("local", "0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd")
-console.log(registryReadWrite.mode)
+const permissionsReadWrite = new Permissions("local", "0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd")
+console.log(permissionsReadWrite.mode)
 // "r+w"
 ```
 
@@ -351,19 +409,20 @@ And use the contract:
 ```ts
 registryReadOnly.getAllNodes().then(console.log)
 
-registryReadWrite.setNode("https://node.provider.net").then(console.log)
+permissionsReadWrite.setApp("My Awesome App", "https://my.awesome.app", [1, 2]).then(console.log)
 ```
 
 ---
 
 ## [Java Library](#java-library)
 
-An auto-generated Java library has been provided in `./java`.
+Auto-generated Java libraries are provided in `./java`.
 
-Copy it to a project's sourcepath, then connect to it using Web3j:
+Copy to a project's sourcepath, then connect using Web3j:
 
 ```kotlin
 import snc.openchargingnetwork.contracts.Registry
+import snc.openchargingnetwork.contracts.Permissions
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.ClientTransactionManager
@@ -375,11 +434,13 @@ val web3 = Web3j.build(HttpService("http://localhost:8544"))
 val txManager = ClientTransactionManager(web3, "0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4")
 val gasProvider = StaticGasProvider(0.toBigInteger(), 10000000.toBigInteger())
 val registry = Registry.load(contractAddress, web3, txManager, gasProvider)
+val permissions = Permissions.load(contractAddress, web3, txManager, gasProvider)
 ```
 
 And use it:
 ```kotlin
 val tx = registry.setNode("https://node.provider.net").sendAsync().get()
+val tx2 = permissions.setApp("Awesome App", "https://awesome.app", listOf(1, 2)).sendAsync().get()
 ```
 
 ---
@@ -429,6 +490,7 @@ The Java wrapper can be updated using `web3j`:
 ```
 npm run compile
 web3j truffle generate ./build/contracts/Registry.json -o ./java -p snc.openchargingnetwork.contracts
+web3j truffle generate ./build/contracts/Permissions.json -o ./java -p snc.openchargingnetwork.contracts
 ```
 
 ### Publishing new versions
@@ -452,6 +514,8 @@ npm publish
 ```
 
 ## Docker
+
+TODO: update for Permissions contract.
 
 You may also use Docker to aid development of other services using the registry. Simply run 
 `docker-compose up` to start ganache and have the contracts deployed automatically. The registry 

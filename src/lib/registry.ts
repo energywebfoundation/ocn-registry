@@ -17,7 +17,7 @@
 import { ethers } from "ethers";
 import { toHex } from "web3-utils"
 import { URL } from "url"
-import * as sign from "./lib/sign";
+import * as sign from "./sign";
 import * as types from "./types"
 import { ContractWrapper } from "./contract-wrapper";
 

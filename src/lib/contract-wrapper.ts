@@ -15,7 +15,7 @@
 */
 
 import { ethers } from "ethers";
-import { networks } from "./networks";
+import { networks } from "../networks";
 
 
 export class ContractWrapper {

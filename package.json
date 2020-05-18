@@ -8,9 +8,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/registry.js",
+  "main": "dist/library.js",
   "bin": {
-    "ocn-registry": "dist/index.js"
+    "ocn-registry": "dist/cli.js"
   },
   "files": [
     "*.json",
