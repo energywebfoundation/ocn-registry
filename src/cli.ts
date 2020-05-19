@@ -164,6 +164,19 @@ yargs
         const result = await permissions.setAppRaw(args.name as string, args.url as string, needs, signer as string)
         console.log(result)
     })
+    .command("delete-app", "Delete OCN App's details", () => {}, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const permissions = new Permissions(args.network, signer)
+        const result = await permissions.deleteApp()
+        console.log(result)
+    })
+    .command("delete-app-raw", "Detele OCN App's details via raw transaction", () => {}, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const spender = process.env.SPENDER || args.spender
+        const permissions = new Permissions(args.network, spender)
+        const result = await permissions.deleteAppRaw(signer as string)
+        console.log(result)
+    })
     .command("get-agreements <user>", "Lists the apps used by a given user", () => {}, async (args) => {
         const permissions = new Permissions(args.network)
         const result = await permissions.getUserAgreements(args.user as string)
@@ -180,6 +193,19 @@ yargs
         const spender = process.env.SPENDER || args.spender
         const permissions = new Permissions(args.network, spender)
         const result = await permissions.createAgreementRaw(args.provider as string, signer as string)
+        console.log(result)
+    })
+    .command("revoke-agreement <provider>", "Revoke an agreement with a particular app provider", () => {} , async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const permissions = new Permissions(args.network, signer)
+        const result = await permissions.revokeAgreement(args.provider as string)
+        console.log(result)
+    })
+    .command("revoke-agreement-raw <provider>", "Revoke an agreement with a particular app provider via raw transaction", () => {}, async (args) => {
+        const signer = process.env.SIGNER || args.signer
+        const spender = process.env.SPENDER || args.spender
+        const permissions = new Permissions(args.network, spender)
+        const result = await permissions.revokeAgreementRaw(args.provider as string, signer as string)
         console.log(result)
     })
     .completion()

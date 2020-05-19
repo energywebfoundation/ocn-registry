@@ -17,7 +17,8 @@
 import { ethers } from "ethers";
 import { ContractWrapper } from "./contract-wrapper";
 import { App, Permission } from "./types";
-import { setAppRaw, createAgreementRaw } from "./sign"
+import { setAppRaw, createAgreementRaw, deleteAppRaw, revokeAgreementRaw } from "./sign"
+
 
 /**
  * Permissions contract wrapper
@@ -91,6 +92,30 @@ export class Permissions extends ContractWrapper {
     }
 
     /**
+     * Direct transaction by signer to delete a app from the OCN Registry.
+     */
+    public async deleteApp(): Promise<ethers.providers.TransactionReceipt> { 
+        this.verifyWritable()
+        const tx = await this.contract.deleteApp()
+        await tx.wait()
+        return tx
+    }
+
+    /**
+     * Remove the app of a given signer, using a raw transaction.
+     * @param signer the private key of the owner of the registry listing. The signer configured in the 
+     * constructor is the "spender": they send and pay for the transaction on the network. 
+     */
+    public async deleteAppRaw(signer: string): Promise<ethers.providers.TransactionReceipt> {
+        this.verifyWritable()
+        const wallet = new ethers.Wallet(signer)
+        const sig = await deleteAppRaw(wallet)
+        const tx = await this.contract.deleteAppRaw(wallet.address, sig.v, sig.r, sig.s)
+        await tx.wait()
+        return tx
+    }
+
+    /**
      * Gets a list of providers used by a given user
      * @param {string} user the address of the app user
      */
@@ -99,9 +124,12 @@ export class Permissions extends ContractWrapper {
         const apps: App[] = []
         
         for (const provider of providers) {
-            const result = await this.getApp(provider)
-            if (result) {
-                apps.push(result)
+            const hasAgreement: boolean = await this.contract.hasUserAgreement(user, provider)
+            if(hasAgreement){
+                const result = await this.getApp(provider)
+                if (result) {
+                    apps.push(result)
+                }
             }
         }
         return apps
@@ -132,5 +160,32 @@ export class Permissions extends ContractWrapper {
         await tx.wait()
         return tx
     }
+
+    /**
+     * Revoke App agreement
+     * @param {string} provider the address of the app provider
+     */
+    public async revokeAgreement(provider: string): Promise<ethers.providers.TransactionReceipt> {
+        this.verifyWritable()
+        const tx = await this.contract.revokeAgreement(provider)
+        await tx.wait()
+        return tx
+    }
+
+    /**
+     * Revoke App agreement via raw transaction
+     * @param {string} provider the address of the app provider
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network. 
+     */
+    public async revokeAgreementRaw(provider: string, signer: string): Promise<ethers.providers.TransactionReceipt> {
+        this.verifyWritable()
+        const wallet = new ethers.Wallet(signer)
+        const signature = await revokeAgreementRaw(provider, wallet)
+        const tx = await this.contract.revokeAgreementRaw(provider, signature.s, signature.r, signature.s)
+        await tx.wait()
+        return tx
+    }
+
 
 }

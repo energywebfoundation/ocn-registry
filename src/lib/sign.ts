@@ -63,7 +63,17 @@ export async function setAppRaw(name: string, url: string, permissions: number[]
     return sign(txMsg as string, wallet)
 }
 
+export async function deleteAppRaw(wallet: ethers.Wallet) {
+  const txMsg = soliditySha3(wallet.address)
+  return sign(txMsg as string, wallet)
+}
+
 export async function createAgreementRaw(provider: string, wallet: ethers.Wallet) {
     const txMsg = soliditySha3(provider)
     return sign(txMsg as string, wallet)
+}
+
+export async function revokeAgreementRaw(provider: string, wallet: ethers.Wallet) {
+  const txMsg = soliditySha3(provider)
+  return sign(txMsg as string, wallet)
 }

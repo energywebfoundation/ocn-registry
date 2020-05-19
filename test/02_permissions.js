@@ -73,6 +73,43 @@ contract('Permissions', function (accounts) {
     assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
   })
 
+  it("should delete app", async () => {
+    const name = "ezPAY"
+    const url = "http://ez.pay.io"
+    const needs = [0, 1]
+    await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], { from: accounts[2] })
+    await permissions.setApp(name, url, needs, { from: accounts[2] })
+
+    await permissions.deleteApp({ from: accounts[2] })
+
+    const actual = await permissions.getApp(accounts[2])
+    assert.equal(actual.name, "")
+    assert.equal(actual.url, "")
+    assert.deepEqual(allToBN(actual.permissions), allToBN([]))
+  })
+
+  it("should delete app using raw transaction", async () => {
+    const provider = ethers.Wallet.createRandom()
+    const name = "ezPAY"
+    const url = "http://ez.pay.io"
+    const needs = [0, 1]
+    const country = toHex("DE")
+    const id = toHex("MSP")
+    const sig1 = await sign.setPartyRaw(country, id, [1, 2], accounts[1], provider)
+    await registry.setPartyRaw(provider.address, country, id, [1, 2], accounts[1], sig1.v, sig1.r, sig1.s)
+    
+    const sig2 = await sign.setAppRaw(name, url, needs, provider)
+    await permissions.setAppRaw(name, url, needs, sig2.v, sig2.r, sig2.s)
+
+    const sig3 = await sign.deleteAppRaw(provider)
+    await permissions.deleteAppRaw(provider.address, sig3.v, sig3.r, sig3.s)
+
+    const actual = await permissions.getApp(provider.address)
+    assert.equal(actual.name, "")
+    assert.equal(actual.url, "")
+    assert.deepEqual(allToBN(actual.permissions), allToBN([]))
+  })
+
   it("should create agreement", async () => {
     await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], {from: accounts[2]})
     await registry.setParty(toHex("CH"), toHex("CPO"), [0], accounts[1], {from: accounts[3]})
@@ -93,4 +130,27 @@ contract('Permissions', function (accounts) {
     assert.deepEqual(actual, [accounts[2]])
   })
 
+  it("should revoke agreement", async () => {
+    await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], {from: accounts[2]})
+    await registry.setParty(toHex("CH"), toHex("CPO"), [0], accounts[1], {from: accounts[3]})
+    await permissions.setApp("voiceIn", "https://in.voice.ni", [1], {from: accounts[2]})
+    await permissions.createAgreement(accounts[2], {from: accounts[3]})
+    await permissions.revokeAgreement(accounts[2], {from: accounts[3]})
+    const actual = await permissions.getUserAgreements(accounts[2])
+    assert.deepEqual(actual, [])
+  })  
+
+  it("should revoke agreement via raw transaction", async () => {
+    await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], {from: accounts[2]})
+    await permissions.setApp("voiceIn", "https://in.voice.ni", [1], {from: accounts[2]})
+
+    const sig = await sign.createAgreementRaw(accounts[2], wallet)
+    await permissions.createAgreementRaw(accounts[2], sig.v, sig.r, sig.s)
+
+    const sig1 = await sign.revokeAgreementRaw(accounts[2], wallet)
+    await permissions.revokeAgreementRaw(accounts[2], sig1.v, sig1.r, sig1.s)
+
+    const actual = await permissions.getUserAgreements(accounts[2])
+    assert.deepEqual(actual, [])
+  })
 })

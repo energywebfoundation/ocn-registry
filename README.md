@@ -350,6 +350,20 @@ ocn-registry set-app --name {{NAME_OF_APP}} --url {{SOME_URL}} --permissions FOR
 
 Full list of permissions coming soon.
 
+### Delete an App
+
+use the following command to remove an APP from the Registry
+
+```
+ocn-registry delete-app
+```
+
+And with raw transaction:
+
+```
+ocn-registry delete-app-raw
+```
+
 ### Get App agreements for a user
 
 To list all agreements for a particular user:
@@ -368,6 +382,16 @@ provider argument is the App owner's Ethereum address (their identity on the OCN
 ```
 ocn-registry set-agreement {{PROVIDER}}
 ```
+
+### Revoke an App Permissions
+
+App user can revoke an App's permissions using the `revoke-agreement` command. The positional
+provider argument is the App owner's Ethereum address (their identity on the OCN).
+
+```
+ocn-registry revoke-agreement {{PROVIDER}}
+```
+
 
 ---
 

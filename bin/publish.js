@@ -33,14 +33,25 @@ async function publish() {
     return new Promise((resolve, reject) => {
       const instance = contract(require('../build/contracts/' + contractName))
       instance.setProvider(provider)
-      instance.detectNetwork().then(() => {
-        resolve({
-          name: instance.contractName,
-          abi: instance.abi,
-          address: instance.address,
-          bytecode: instance.bytecode
+      if (network === "volta" && contractName === "Registry") {
+        instance.at(process.env.REGISTRY_ADDRESS).then((res) => {
+          resolve({
+            name: instance.contractName,
+            abi: instance.abi,
+            address: res.address,
+            bytecode: instance.bytecode
+          })
         })
-      })
+      } else {
+        instance.detectNetwork().then(() => {
+          resolve({
+            name: instance.contractName,
+            abi: instance.abi,
+            address: instance.address,
+            bytecode: instance.bytecode
+          })
+        })
+      }
     })
   })
   const config = {}

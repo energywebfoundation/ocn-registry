@@ -118,6 +118,34 @@ contract Permissions {
             permissions = apps[provider].permissions;
     }
 
+    /**
+     * Delete OCN App entry
+     * @param provider the app provider address (owner of the app)
+     */
+    function deleteApp(address provider) private {
+        // check the app list entry
+        require(uniqueProviders[provider] == true, "Cannot delete app that does not exist.");
+        App memory details = apps[provider];
+
+        // delete app list entry for sender
+        delete apps[provider];
+        uniqueProviders[provider] = false;
+
+        emit AppUpdate("", "", details.permissions, provider);
+    }
+
+    // delete App using msg.sender as owner (direct transaction)
+    function deleteApp() public {
+        deleteApp(msg.sender);
+    }
+
+    // delete App using signer as owner (raw transaction)
+    function deleteAppRaw(address provider, uint8 v, bytes32 r, bytes32 s) public {
+        bytes32 paramHash = keccak256(abi.encodePacked(provider));
+        address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
+        deleteApp(signer);
+    }
+
     // return list of owners
     function getProviders() public view returns (address[] memory) {
         return providers;
@@ -161,9 +189,41 @@ contract Permissions {
         createAgreement(signer, provider);
     }
 
+    /**
+     * revoke agreement of app
+     * @param user the app user addresss
+     * @param provider the app provider address (owner of the app)
+     */
+    function revokeAgreement(address user, address provider) private {
+        (address operator, ) = registry.getOperatorByAddress(user);
+        require(operator != address(0), "App user has no party listing in Registry.");
+        require(uniqueProviders[provider] == true, "Provider has no registered App.");
+        require(userAgreements[user][provider] == true, "No Agreement made between user and provider.");
+        userAgreements[user][provider] = false;
+
+        emit AppAgreement(user, provider);
+    }
+
+    // revoke agreement using direct transaction
+    function revokeAgreement(address provider) public {
+        revokeAgreement(msg.sender, provider);
+    }
+
+    // revoke agreement using raw transaction
+    function revokeAgreementRaw(address provider, uint8 v, bytes32 r, bytes32 s) public {
+        bytes32 paramHash = keccak256(abi.encodePacked(provider));
+        address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
+        revokeAgreement(signer, provider);
+    }
+
     // read providers of a given user
     function getUserAgreements(address user) public view returns (address[] memory) {
         return providersOf[user];
+    }
+
+    // get the provider's agreement of a given user
+    function hasUserAgreement(address user, address provider) public view returns (bool) {
+        return userAgreements[user][provider];
     }
 
 }
