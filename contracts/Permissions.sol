@@ -216,9 +216,14 @@ contract Permissions {
         revokeAgreement(signer, provider);
     }
 
-    // read providers of a given user
-    function getUserAgreements(address user) public view returns (address[] memory) {
+    // read provider agreements of a given user by their address
+    function getUserAgreementsByAddress(address user) public view returns (address[] memory) {
         return providersOf[user];
+    }
+
+    // read provider agreements of a given user by their OCPI credentials
+    function getUserAgreementsByOcpi(bytes2 countryCode, bytes3 partyId) public view returns (address[] memory) {
+        address user = registry.uniqueParties(countryCode, partyId);
     }
 
     // get the provider's agreement of a given user
