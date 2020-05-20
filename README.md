@@ -366,13 +366,16 @@ ocn-registry delete-app-raw
 
 ### Get App agreements for a user
 
-To list all agreements for a particular user:
+To list all agreements for a particular user, using their address or OCPI credentials
+(`country_code` and `party_id`):
 
 ```
-ocn-registry get-agreements {{USER}}
+ocn-registry get-agreements -a {{ADDRESS}}
 ```
-
-Where the positional user argument refer's to an OCPI party's identity (Ethereum address). 
+or
+```
+ocn-registry get-agreements -c DE MSP
+```
 
 ### Agree to an App permissions
 
