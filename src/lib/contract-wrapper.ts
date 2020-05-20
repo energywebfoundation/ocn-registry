@@ -15,6 +15,7 @@
 */
 
 import { ethers } from "ethers";
+import { toHex } from "web3-utils"
 import { networks } from "../networks";
 
 
@@ -63,6 +64,16 @@ export class ContractWrapper {
         if (this.mode !== "r+w") {
             throw Error("No signer provided. Unable to send transaction.")
         }
+    }
+
+    protected verifyStringLen(str: string, len: number): void {
+        if (str.length !== len) {
+            throw Error(`Invalid string length. Wanted ${len}, got "${str}" (${str.length})`)
+        }
+    }
+
+    protected toHex(str: string): string {
+        return toHex(str.toUpperCase())
     }
 
 }

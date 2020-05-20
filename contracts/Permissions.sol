@@ -109,10 +109,13 @@ contract Permissions {
 
     // read app data
     function getApp(address provider) public view returns (
+            bytes2 countryCode,
+            bytes3 partyId,
             string memory name,
             string memory url,
             uint[] memory permissions
         ) {
+            (countryCode, partyId,,,,,) = registry.getPartyDetailsByAddress(provider);
             name = apps[provider].name;
             url = apps[provider].url;
             permissions = apps[provider].permissions;
@@ -223,12 +226,22 @@ contract Permissions {
 
     // read provider agreements of a given user by their OCPI credentials
     function getUserAgreementsByOcpi(bytes2 countryCode, bytes3 partyId) public view returns (address[] memory) {
-        address user = registry.uniqueParties(countryCode, partyId);
+        address user;
+        (user,,,,,) = registry.getPartyDetailsByOcpi(countryCode, partyId);
+        return providersOf[user];
     }
 
-    // get the provider's agreement of a given user
-    function hasUserAgreement(address user, address provider) public view returns (bool) {
+    // get the provider agreements of a given user by their address
+    function hasUserAgreementByAddress(address user, address provider) public view returns (bool) {
         return userAgreements[user][provider];
     }
+
+    // get the provider agreements of a given user by their ocpi credentials
+    function hasUserAgreementByOcpi(bytes2 countryCode, bytes3 partyId, address provider) public view returns (bool) {
+        address user;
+        (user,,,,,) = registry.getPartyDetailsByOcpi(countryCode, partyId);
+        return userAgreements[user][provider];
+    }
+
 
 }

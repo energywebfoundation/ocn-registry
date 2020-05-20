@@ -55,7 +55,11 @@ export interface App {
     name: string
     url: string
     permissions: Permission[]
-    provider: string
+    provider: {
+        address: string
+        countryCode: string
+        partyId: string
+    }
 }
 
 // examples; not full list

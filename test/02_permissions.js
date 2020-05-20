@@ -56,6 +56,8 @@ contract('Permissions', function (accounts) {
     await permissions.setApp(name, "http://ez.pay.io", [0, 1], { from: accounts[2] })
     await permissions.setApp(name, url, needs, { from: accounts[2] })
     const actual = await permissions.getApp(accounts[2])
+    assert.equal(actual.countryCode, toHex("DE"))
+    assert.equal(actual.partyId, toHex("MSP"))
     assert.equal(actual.name, name)
     assert.equal(actual.url, url)
     assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
@@ -117,6 +119,8 @@ contract('Permissions', function (accounts) {
     await permissions.createAgreement(accounts[2], {from: accounts[3]})
     const actual = await permissions.getUserAgreementsByAddress(accounts[3])
     assert.deepEqual(actual, [accounts[2]])
+    const actual2 = await permissions.getUserAgreementsByOcpi(toHex("CH"), toHex("CPO"))
+    assert.deepEqual(actual2, [accounts[2]])
   })
 
   it("should create agreement via raw transaction", async () => {
@@ -136,7 +140,7 @@ contract('Permissions', function (accounts) {
     await permissions.setApp("voiceIn", "https://in.voice.ni", [1], {from: accounts[2]})
     await permissions.createAgreement(accounts[2], {from: accounts[3]})
     await permissions.revokeAgreement(accounts[2], {from: accounts[3]})
-    const actual = await permissions.getUserAgreements(accounts[2])
+    const actual = await permissions.getUserAgreementsByAddress(accounts[2])
     assert.deepEqual(actual, [])
   })  
 
@@ -150,7 +154,7 @@ contract('Permissions', function (accounts) {
     const sig1 = await sign.revokeAgreementRaw(accounts[2], wallet)
     await permissions.revokeAgreementRaw(accounts[2], sig1.v, sig1.r, sig1.s)
 
-    const actual = await permissions.getUserAgreements(accounts[2])
+    const actual = await permissions.getUserAgreementsByAddress(accounts[2])
     assert.deepEqual(actual, [])
   })
 })

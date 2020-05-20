@@ -19,7 +19,7 @@
 import yargs from "yargs"
 import { Registry } from "./lib/registry"
 import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder, providerBuilder } from "./cli/builders"
-import { PartyDetails, Role, Module, Permission } from "./lib/types"
+import { PartyDetails, Role, Module, Permission, App } from "./lib/types"
 import { networks } from "./networks"
 import { Permissions } from "./lib/permissions"
 
@@ -142,12 +142,12 @@ yargs
     .command("get-app <provider>", "Retrieve app details and required permissions", providerBuilder, async (args) => {
         const permissions = new Permissions(args.network)
         const result = await permissions.getApp(args.provider as string)
-        console.log(result || "Provider has no App listed")
+        console.log(result ? JSON.stringify(result, null, 2) : "Provider has no App listed")
     })
     .command("list-apps", "List all registered apps", () => {}, async (args) => {
         const permissions = new Permissions(args.network)
         const result = await permissions.getAllApps()
-        console.log(result)
+        console.log(JSON.stringify(result, null, 2))
     })
     .command("set-app", "Add or update an OCN App's details", setAppBuilder, async (args) => {
         const signer = process.env.SIGNER || args.signer
@@ -177,10 +177,16 @@ yargs
         const result = await permissions.deleteAppRaw(signer as string)
         console.log(result)
     })
-    .command("get-agreements <user>", "Lists the apps used by a given user", () => {}, async (args) => {
+    .command("get-agreements", "Lists the apps used by a given user", getPartyBuilder, async (args) => {
         const permissions = new Permissions(args.network)
-        const result = await permissions.getUserAgreements(args.user as string)
-        console.log(result)
+        let result: App[]
+        if (args.address) {
+            result = await permissions.getUserAgreementsByAddress(args.address as string)
+        } else {
+            const [countryCode, partyId] = args.credentials as string[]
+            result = await permissions.getUserAgreementsByOcpi(countryCode, partyId)
+        }
+        console.log(JSON.stringify(result, null, 2))
     })
     .command("set-agreement <provider>", "Create an agreement with a particular app provider", providerBuilder, async (args) => {
         const signer = process.env.SIGNER || args.signer

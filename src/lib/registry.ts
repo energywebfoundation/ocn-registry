@@ -15,7 +15,6 @@
 */
 
 import { ethers } from "ethers";
-import { toHex } from "web3-utils"
 import { URL } from "url"
 import * as sign from "./sign";
 import * as types from "./types"
@@ -258,17 +257,6 @@ export class Registry extends ContractWrapper {
         const tx = await this.contract.deletePartyRaw(wallet.address, sig.v, sig.r, sig.s)
         await tx.wait()
         return tx
-    }
-
-
-    private verifyStringLen(str: string, len: number): void {
-        if (str.length !== len) {
-            throw Error(`Invalid string length. Wanted ${len}, got "${str}" (${str.length})`)
-        }
-    }
-
-    private toHex(str: string): string {
-        return toHex(str.toUpperCase())
     }
 
     private toPartyDetails(input: any): types.PartyDetails {

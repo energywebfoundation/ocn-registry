@@ -21,7 +21,6 @@ const path = require('path')
 const network = process.argv[2] || 'development'
 const config = require('../truffle').networks[network]
 const provider = config.provider ? config.provider() : new Web3.providers.HttpProvider(`http://${config.host}:${config.port}`)
-const web3 = new Web3(provider)
 
 const contractNames = ['Registry', 'Permissions']
 

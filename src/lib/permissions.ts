@@ -39,10 +39,14 @@ export class Permissions extends ContractWrapper {
             return
         }
         return {
-            provider,
             name: result.name,
             url: result.url,
-            permissions: result.permissions.map((permission) => Permission[permission.toNumber()])
+            permissions: result.permissions.map((permission) => Permission[permission.toNumber()]),
+            provider: {
+                address: provider,
+                countryCode: ethers.utils.toUtf8String(result.countryCode),
+                partyId: ethers.utils.toUtf8String(result.partyId)
+            }
         }
     }
 
@@ -116,23 +120,25 @@ export class Permissions extends ContractWrapper {
     }
 
     /**
-     * Gets a list of providers used by a given user
+     * Gets a list of providers used by a given user by their address
      * @param {string} user the address of the app user
      */
-    public async getUserAgreements(user: string): Promise<App[]> {
-        const providers = await this.contract.getUserAgreements(user)
-        const apps: App[] = []
-        
-        for (const provider of providers) {
-            const hasAgreement: boolean = await this.contract.hasUserAgreement(user, provider)
-            if(hasAgreement){
-                const result = await this.getApp(provider)
-                if (result) {
-                    apps.push(result)
-                }
-            }
-        }
-        return apps
+    public async getUserAgreementsByAddress(user: string): Promise<App[]> {
+        const providers = await this.contract.getUserAgreementsByAddress(user)
+        const hasUserAgreement = async (provider: string) => await this.contract.hasUserAgreementByAddress(user, provider)
+        return this.getUserAgreements(providers, hasUserAgreement)
+    }
+
+    public async getUserAgreementsByOcpi(countryCode: string, partyId: string): Promise<App[]> {
+        this.verifyStringLen(countryCode, 2)
+        this.verifyStringLen(partyId, 3)
+
+        const country = this.toHex(countryCode)
+        const id = this.toHex(partyId)
+
+        const providers = await this.contract.getUserAgreementsByOcpi(country, id)
+        const hasUserAgreement = async (provider: string) => await this.contract.hasUserAgreementByOcpi(country, id, provider)
+        return this.getUserAgreements(providers, hasUserAgreement)
     }
 
     /**
@@ -187,5 +193,20 @@ export class Permissions extends ContractWrapper {
         return tx
     }
 
+
+    private async getUserAgreements(providers: string[], hasUserAgreement: (provider: string) => Promise<boolean>): Promise<App[]> {
+        const apps: App[] = []
+        
+        for (const provider of providers) {
+            const hasAgreement = await hasUserAgreement(provider)
+            if (hasAgreement) {
+                const result = await this.getApp(provider)
+                if (result) {
+                    apps.push(result)
+                }
+            }
+        }
+        return apps
+    }
 
 }
