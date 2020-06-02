@@ -348,7 +348,7 @@ to provide more information for potential customers:
 ocn-registry set-app --name {{NAME_OF_APP}} --url {{SOME_URL}} --permissions FORWARD_SENDER
 ```
 
-Full list of permissions coming soon.
+[Full list of permissions](Permissions.md)
 
 ### Delete an App
 
