@@ -25,7 +25,7 @@ blockchain network using a different, funded keypair.
 Therefore, in "direct" transactions, the signer and spender are one, named just the "signer". In contrast, in
 raw transactions, the "signer" is the data owner, and the "spender" is the one paying for the transaction.
 
-### Node Operators, OCPI Parties and App providers
+### Node Operators and OCPI Parties
 
 The principle behind the registry is that the nodes, comprising the Open Charging Network, need a way of discovering 
 counterparties they are not directly connected to. This works in two stages: OCN Node operators (i.e. administrators) 
@@ -34,6 +34,8 @@ Providers) to link their services to a registered node.
 
 Note that the registry listing must be done by the OCPI party before an OCN Node accepts their credentials 
 registration, so that the OCN Node can ensure the party has correctly linked themselves to that node in the registry. 
+
+### App Providers and Users
 
 An OCN App is an OCPI party that requires additional permissions from their customers. We make this distinction
 from other "Apps" that might only require customers to send OCPI messages (including custom OCPI modules) directly.
@@ -46,7 +48,7 @@ the aforementioned permissions, such a party must then list their app and the pe
 smart contract, entitled "Permissions". Thereafter, a user can make their agreement explicit in the same smart
 contract.
 
-#### OCPI Party connection steps:
+#### Example OCPI Party connection steps:
 
 1. Operator signs a transaction stating they run the OCN Node on domain `https://node.ocn.org`. The address of their
 wallet (`0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4`), used to sign the transaction, now points to the domain name. 
@@ -57,7 +59,8 @@ OCN Node operator.
 
 3. OCPI party does the credentials registration handshake with the OCN Node at `https://node.ocn.org`.
 
-4. Party is now able to send and receive OCPI requests from other OCPI parties on the network. 
+4. Party is now able to send and receive OCPI requests from other OCPI parties on the network. Likewise, they gain
+access to the setting of App permissions. 
 
 ---
 
@@ -75,22 +78,67 @@ There are several ways to interact with the OCN Registry, including:
 
 ### Getting started
 
-Clone this repository or install the registry npm package:
+Install the registry npm package:
 
-#### Using this repository
+```
+npm install -g @shareandcharge/ocn-registry
+```
+
+Alternatively, it is possible to clone this repository:
 
 ```
 git clone https://bitbucket.org/shareandcharge/ocn-registry.git
 cd ocn-registry
 npm install
-npx ts-node src/cli --help
 ```
 
-#### Using the npm package
+### Basic Usage
+
+To make sure your installation is correctly working, verify with the following command, which will 
+print the version number:
+```
+$ ocn-registry --version
+1.0.0
+```
+
+If the repository has been cloned instead, the CLI can be accessed via `npx`:
+```
+$ npx ts-node src/cli --version
+1.0.0
+```
+
+For the remainder of the documentation, it will be assumed that the CLI npm package has been installed globally.
+
+#### Getting Help
+
+The CLI and all of its sub-commands have help text relating to usage. The top-level help flag prints all possible
+sub-commands which can be used:
 
 ```
-npm install -g @shareandcharge/ocn-registry
-ocn-registry --help
+$ ocn-registry --help
+[...]
+
+Commands:
+  cli get-node <address>               Get OCN Node operator entry by their
+                                       wallet address
+  cli list-nodes                       Get all OCN Nodes listed in registry
+
+[...]
+``` 
+
+Meanwhile, using the help flag on a particular sub-command will show more detailed information:
+```
+$ ocn-registry get-party --help
+[...]
+
+Options:
+  --network, --net, -n  Specifies the target network.
+                          [choices: "local", "volta", "prod"] [default: "local"]
+  --address, -a         Wallet address of the party                     [string]
+  --credentials, -c     OCPI country_code (ISO-3166 alpha-2) and party_id
+                        (ISO-15118)                                      [array]
+
+[...]
 ```
 
 #### Setting the signer
@@ -100,20 +148,32 @@ contract). Contract calls (i.e. getting data) do not require this.
 
 This can be done in two ways: environment variables or command line flags.
 
+The first method allows all subsequent commands to use the same value for signer/spender. This also means that
+it is not necessary to state the signer with a command line flag.
+
+Use `export` to set your shell variables:
+
 ```
-EXPORT SIGNER=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd
+export SIGNER=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd
 ```
 
 If using a raw command, the spender is also required:
 
 ```
-EXPORT SENDER=0x2f0810c5fc949c846ff64edb26b0b00ca28effaffb9ac867a7b9256c034fe849
+export SENDER=0x2f0810c5fc949c846ff64edb26b0b00ca28effaffb9ac867a7b9256c034fe849
 ```
 
 **Important: do not use these private keys outside of development! They were generated for this guide only.**
 
-Alternatively, flags allow setting the signer and spender for each command. Add `--help` to any command to get 
-information about available flags.
+Alternatively, flags allow setting the signer and spender for each command:
+
+```
+Transactions:
+  --signer, -s   Data owner's private key. Required for modifying contract
+                 state.                                                 [string]
+  --spender, -x  Spender's private key. Required for sending raw transactions.
+                                                                        [string]
+```
 
 
 #### Choosing the network
@@ -131,7 +191,7 @@ for production.
 
 ### Get an operator's node
 
-To check the domain of a single node operator on the network, use:
+To check the domain of a single node operator on a particular network, use:
 
 ```
 ocn-registry get-node 0xEada1b2521115e07578DBD9595B52359E9900104
@@ -172,16 +232,11 @@ ocn-registry set-node-raw https://node.provider.net
 Remember to set the signer AND spender for the raw transaction. If not using environment variables, set with the following flags:
 
 ```
-ocn-registry set-node-raw https://node.provider.net
-        --signer=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd 
+ocn-registry set-node-raw https://node.provider.net \
+        --signer=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd \
         --spender=0x2f0810c5fc949c846ff64edb26b0b00ca28effaffb9ac867a7b9256c034fe849
 ```
 
-Type `--help` after any command for more information.
-
-```
-ocn-registry set-node-raw --help
-```
 
 ### De-listing a node
 
@@ -203,8 +258,8 @@ Check the registered information of a given party using their address or OCPI cr
 `party_id`):
 
 ```
-ocn-registry get-party -a 0x0B2E57DDB616175950e65dE47Ef3F5BA3bc29979
-ocn-registry get-party -c CH CPO
+ocn-registry get-party --address 0x0B2E57DDB616175950e65dE47Ef3F5BA3bc29979
+ocn-registry get-party --credentials CH CPO
 ```
 
 ### Get all parties
@@ -218,6 +273,7 @@ ocn-registry list-parties
 ### Listing a party
 
 To list a party, the following information is required:
+
 - `country_code` and `party_id`
 - role
 - OCN Node operator wallet address
@@ -229,18 +285,24 @@ The following commands can be used to both create and update the party informati
 
 Using a direct transaction:
 ```
-ocn-registry set-party -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry set-party --credentials CH CPO \
+    --roles CPO \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 Using a raw transaction:
 ```
-ocn-registry set-party-raw -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry set-party-raw --credentials CH CPO 
+    --roles CPO \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 #### Scenario 2: party_id with multiple roles
 
 ```
-ocn-registry set-party -c CH ABC -r CPO EMSP -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry set-party --credentials CH ABC \
+    -roles CPO EMSP \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 #### Scenario 3: platform with multiple roles under different `party_id`s
@@ -248,8 +310,16 @@ ocn-registry set-party -c CH ABC -r CPO EMSP -o 0x9bC1169Ca09555bf2721A5C9eC6D69
 In this case, the platform must use different wallets for each `party_id`:
 
 ```
-ocn-registry set-party -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 -s 0xd37f60f3a7c78a72d24e50b9105879c89d249e299699ba762d890276dea73fea
-ocn-registry set-party -c CH MSP -r EMSP -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 -s 0x0bdea97cf8736a66f85283d7b0241b5cba51edd809a67af5e8971f441aa8e22b
+ocn-registry set-party --credentials CH CPO \
+    --roles CPO \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 \
+    --signer 0xd37f60f3a7c78a72d24e50b9105879c89d249e299699ba762d890276dea73fea
+```
+```
+ocn-registry set-party --credentials CH MSP \
+    --roles EMSP \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 \
+    --signer 0x0bdea97cf8736a66f85283d7b0241b5cba51edd809a67af5e8971f441aa8e22b
 ```
 
 ### Listing OCPI modules implemented by the party
@@ -331,10 +401,10 @@ ocn-registry list-apps
 
 ### Get a specific App's details
 
-Use the positional argument for the provider of the App: the Ethereum address of the owner.
+Use the positional argument for the provider of the App (the Ethereum address of the owner):
 
 ```
-ocn-registry get-app {{PROVIDER}}
+ocn-registry get-app 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 ### List an App
@@ -345,23 +415,20 @@ To add an App, use the `set-app` command. Note that the name and URL are optiona
 to provide more information for potential customers:
 
 ```
-ocn-registry set-app --name {{NAME_OF_APP}} --url {{SOME_URL}} --permissions FORWARD_SENDER
+ocn-registry set-app --name Hot New App \
+    --url https://hot.new.app \
+    --permissions FORWARD_SENDER
 ```
 
-[Full list of permissions](Permissions.md)
+See the [full list of permissions](Permissions.md) for more. These are the permissions
+which the OCN Node has currently implmented, but this list can be expanded in the future. 
 
 ### Delete an App
 
-use the following command to remove an APP from the Registry
+use the following command to remove an App from the Registry
 
 ```
 ocn-registry delete-app
-```
-
-And with raw transaction:
-
-```
-ocn-registry delete-app-raw
 ```
 
 ### Get App agreements for a user
@@ -370,11 +437,11 @@ To list all agreements for a particular user, using their address or OCPI creden
 (`country_code` and `party_id`):
 
 ```
-ocn-registry get-agreements -a {{ADDRESS}}
+ocn-registry get-agreements --address 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 or
 ```
-ocn-registry get-agreements -c DE MSP
+ocn-registry get-agreements --credentials DE MSP
 ```
 
 ### Agree to an App permissions
@@ -383,7 +450,7 @@ As an App user, agree to an App's permissions using the `set-agreement` command.
 provider argument is the App owner's Ethereum address (their identity on the OCN).
 
 ```
-ocn-registry set-agreement {{PROVIDER}}
+ocn-registry set-agreement 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 ### Revoke an App Permissions
@@ -392,7 +459,7 @@ App user can revoke an App's permissions using the `revoke-agreement` command. T
 provider argument is the App owner's Ethereum address (their identity on the OCN).
 
 ```
-ocn-registry revoke-agreement {{PROVIDER}}
+ocn-registry revoke-agreement 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 
