@@ -273,6 +273,7 @@ ocn-registry list-parties
 ### Listing a party
 
 To list a party, the following information is required:
+
 - `country_code` and `party_id`
 - role
 - OCN Node operator wallet address
