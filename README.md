@@ -415,13 +415,25 @@ To add an App, use the `set-app` command. Note that the name and URL are optiona
 to provide more information for potential customers:
 
 ```
-ocn-registry set-app --name Hot New App \
-    --url https://hot.new.app \
+ocn-registry set-app --name Smart Payment App \
+    --url https://smart.payment.app \
     --permissions FORWARD_SENDER
 ```
 
+The `--permissions` flag takes an array of permissions. For example, the following would require
+all requests sent to the receiver interfaces of the `sessions` and `cdrs` module to be forwarded
+to the app:
+```
+--permissions FORWARD_SESSIONS_RECEIVER FORWARD_CDRS_RECEIVER
+```
+
 See the [full list of permissions](Permissions.md) for more. These are the permissions
-which the OCN Node has currently implmented, but this list can be expanded in the future. 
+which the OCN Node has currently implmented, but this list can be expanded in the future.
+
+Note that this list is also available from the command line:
+```
+ocn-registry set-app --help
+```
 
 ### Delete an App
 
