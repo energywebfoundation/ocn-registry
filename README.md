@@ -1,6 +1,6 @@
 # Open Charging Network Registry
 
-Decentralized Registry smart contracts for Node operators, OCPI party and App providers. For Ethereum-based networks.
+Decentralized Registry smart contracts for Node operators, OCPI party and Service providers. For Ethereum-based networks.
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a24c1584300a4c758d8da109a3e6cb80)](https://www.codacy.com?utm_source=bitbucket.org&amp;utm_medium=referral&amp;utm_content=shareandcharge/registry&amp;utm_campaign=Badge_Grade)
 
@@ -35,16 +35,16 @@ Providers) to link their services to a registered node.
 Note that the registry listing must be done by the OCPI party before an OCN Node accepts their credentials 
 registration, so that the OCN Node can ensure the party has correctly linked themselves to that node in the registry. 
 
-### App Providers and Users
+### Service Providers and Users
 
-An OCN App is an OCPI party that requires additional permissions from their customers. We make this distinction
-from other "Apps" that might only require customers to send OCPI messages (including custom OCPI modules) directly.
+An OCN Service is an OCPI party that requires additional permissions from their customers. We make this distinction
+from other "Services" that might only require customers to send OCPI messages (including custom OCPI modules) directly.
 Such permissions could include the forwarding of session or charge detail record data, for example in a payment
-app. Once a customer/user has agreed to the App's permissions, the OCN Node tied to the customer will automate
-any such required permissions, lessening the cost of integration with an App.
+service. Once a customer/user has agreed to the Service's permissions, the OCN Node tied to the customer will automate
+any such required permissions, lessening the cost of integration with a service.
 
-OCN Apps are first and foremost OCPI parties - they must be listed in the Registry smart contract. To be granted
-the aforementioned permissions, such a party must then list their app and the permissions required in a separate
+OCN Services are first and foremost OCPI parties - they must be listed in the Registry smart contract. To be granted
+the aforementioned permissions, such a party must then list their service and the permissions required in a separate
 smart contract, entitled "Permissions". Thereafter, a user can make their agreement explicit in the same smart
 contract.
 
@@ -60,7 +60,7 @@ OCN Node operator.
 3. OCPI party does the credentials registration handshake with the OCN Node at `https://node.ocn.org`.
 
 4. Party is now able to send and receive OCPI requests from other OCPI parties on the network. Likewise, they gain
-access to the setting of App permissions. 
+access to the setting of Service permissions. 
 
 ---
 
@@ -393,36 +393,36 @@ And with raw transaction:
 ocn-registry delete-party-raw
 ```
 
-### Get all Apps' details
+### Get all Services' details
 
 ```
-ocn-registry list-apps
+ocn-registry list-services
 ```
 
-### Get a specific App's details
+### Get a specific Service's details
 
-Use the positional argument for the provider of the App (the Ethereum address of the owner):
+Use the positional argument for the provider of the Service (the Ethereum address of the owner):
 
 ```
-ocn-registry get-app 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry get-service 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
-### List an App
+### List a Service
 
-Ensure that before adding an App to the Registry, the owner of the App is listed as an OCPI party.
+Ensure that before adding a service to the Registry, the owner of the Service is listed as an OCPI party.
 
-To add an App, use the `set-app` command. Note that the name and URL are optional - their aim is
+To add a Service, use the `set-service` command. Note that the name and URL are optional - their aim is
 to provide more information for potential customers:
 
 ```
-ocn-registry set-app --name Smart Payment App \
-    --url https://smart.payment.app \
+ocn-registry set-service --name Smart Payment Service \
+    --url https://smart.payment.service \
     --permissions FORWARD_SENDER
 ```
 
 The `--permissions` flag takes an array of permissions. For example, the following would require
 all requests sent to the receiver interfaces of the `sessions` and `cdrs` module to be forwarded
-to the app:
+to the service:
 ```
 --permissions FORWARD_SESSIONS_RECEIVER FORWARD_CDRS_RECEIVER
 ```
@@ -432,18 +432,18 @@ which the OCN Node has currently implmented, but this list can be expanded in th
 
 Note that this list is also available from the command line:
 ```
-ocn-registry set-app --help
+ocn-registry set-service --help
 ```
 
-### Delete an App
+### Delete a service
 
-use the following command to remove an App from the Registry
+use the following command to remove a service from the Registry
 
 ```
-ocn-registry delete-app
+ocn-registry delete-service
 ```
 
-### Get App agreements for a user
+### Get Service agreements for a user
 
 To list all agreements for a particular user, using their address or OCPI credentials
 (`country_code` and `party_id`):
@@ -456,19 +456,19 @@ or
 ocn-registry get-agreements --credentials DE MSP
 ```
 
-### Agree to an App permissions
+### Agree to a service permissions
 
-As an App user, agree to an App's permissions using the `set-agreement` command. The positional
-provider argument is the App owner's Ethereum address (their identity on the OCN).
+As a service user, agree to a service's permissions using the `set-agreement` command. The positional
+provider argument is the Service owner's Ethereum address (their identity on the OCN).
 
 ```
 ocn-registry set-agreement 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
-### Revoke an App Permissions
+### Revoke a service Permissions
 
-App user can revoke an App's permissions using the `revoke-agreement` command. The positional
-provider argument is the App owner's Ethereum address (their identity on the OCN).
+Service user can revoke a service's permissions using the `revoke-agreement` command. The positional
+provider argument is the Service owner's Ethereum address (their identity on the OCN).
 
 ```
 ocn-registry revoke-agreement 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
@@ -515,7 +515,7 @@ And use the contract:
 ```ts
 registryReadOnly.getAllNodes().then(console.log)
 
-permissionsReadWrite.setApp("My Awesome App", "https://my.awesome.app", [1, 2]).then(console.log)
+permissionsReadWrite.setService("My Awesome Service", "https://my.awesome.service", [1, 2]).then(console.log)
 ```
 
 ---
@@ -546,7 +546,7 @@ val permissions = Permissions.load(contractAddress, web3, txManager, gasProvider
 And use it:
 ```kotlin
 val tx = registry.setNode("https://node.provider.net").sendAsync().get()
-val tx2 = permissions.setApp("Awesome App", "https://awesome.app", listOf(1, 2)).sendAsync().get()
+val tx2 = permissions.setService("Awesome Service", "https://awesome.service", listOf(1, 2)).sendAsync().get()
 ```
 
 ---

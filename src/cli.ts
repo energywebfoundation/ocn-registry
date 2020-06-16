@@ -18,8 +18,8 @@
 
 import yargs from "yargs"
 import { Registry } from "./lib/registry"
-import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setAppBuilder, providerBuilder } from "./cli/builders"
-import { PartyDetails, Role, Module, Permission, App } from "./lib/types"
+import { getPartyBuilder, setPartyBuilder, setPartyModulesBuilder, setServiceBuilder, providerBuilder } from "./cli/builders"
+import { PartyDetails, Role, Module, Permission, Service } from "./lib/types"
 import { networks } from "./networks"
 import { Permissions } from "./lib/permissions"
 
@@ -139,47 +139,47 @@ yargs
         const result = await registry.deletePartyRaw(signer as string)
         console.log(result)
     })
-    .command("get-app <provider>", "Retrieve app details and required permissions", providerBuilder, async (args) => {
+    .command("get-service <provider>", "Retrieve service details and required permissions", providerBuilder, async (args) => {
         const permissions = new Permissions(args.network)
-        const result = await permissions.getApp(args.provider as string)
-        console.log(result ? JSON.stringify(result, null, 2) : "Provider has no App listed")
+        const result = await permissions.getService(args.provider as string)
+        console.log(result ? JSON.stringify(result, null, 2) : "Provider has no Service listed")
     })
-    .command("list-apps", "List all registered apps", () => {}, async (args) => {
+    .command("list-services", "List all registered services", () => {}, async (args) => {
         const permissions = new Permissions(args.network)
-        const result = await permissions.getAllApps()
+        const result = await permissions.getAllServices()
         console.log(JSON.stringify(result, null, 2))
     })
-    .command("set-app", "Add or update an OCN App's details", setAppBuilder, async (args) => {
+    .command("set-service", "Add or update an OCN Service's details", setServiceBuilder, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const permissions = new Permissions(args.network, signer)
         const needs: Permission[] = Array.from(new Set(args.permissions as string[])).map((permission) => Permission[permission])
-        const result = await permissions.setApp(args.name as string, args.url as string, needs)
+        const result = await permissions.setService(args.name as string, args.url as string, needs)
         console.log(result)
     })
-    .command("set-app-raw", "Add or update an OCN App's details via raw transaction", setAppBuilder, async (args) => {
+    .command("set-service-raw", "Add or update an OCN Service's details via raw transaction", setServiceBuilder, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const spender = process.env.SPENDER || args.spender
         const permissions = new Permissions(args.network, spender)
         const needs: Permission[] = Array.from(new Set(args.permissions as string[])).map((permission) => Permission[permission])
-        const result = await permissions.setAppRaw(args.name as string, args.url as string, needs, signer as string)
+        const result = await permissions.setServiceRaw(args.name as string, args.url as string, needs, signer as string)
         console.log(result)
     })
-    .command("delete-app", "Delete OCN App's details", () => {}, async (args) => {
+    .command("delete-service", "Delete OCN Service's details", () => {}, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const permissions = new Permissions(args.network, signer)
-        const result = await permissions.deleteApp()
+        const result = await permissions.deleteService()
         console.log(result)
     })
-    .command("delete-app-raw", "Detele OCN App's details via raw transaction", () => {}, async (args) => {
+    .command("delete-service-raw", "Detele OCN Service's details via raw transaction", () => {}, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const spender = process.env.SPENDER || args.spender
         const permissions = new Permissions(args.network, spender)
-        const result = await permissions.deleteAppRaw(signer as string)
+        const result = await permissions.deleteServiceRaw(signer as string)
         console.log(result)
     })
-    .command("get-agreements", "Lists the apps used by a given user", getPartyBuilder, async (args) => {
+    .command("get-agreements", "Lists the services used by a given user", getPartyBuilder, async (args) => {
         const permissions = new Permissions(args.network)
-        let result: App[]
+        let result: Service[]
         if (args.address) {
             result = await permissions.getUserAgreementsByAddress(args.address as string)
         } else {
@@ -188,26 +188,26 @@ yargs
         }
         console.log(JSON.stringify(result, null, 2))
     })
-    .command("set-agreement <provider>", "Create an agreement with a particular app provider", providerBuilder, async (args) => {
+    .command("set-agreement <provider>", "Create an agreement with a particular service provider", providerBuilder, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const permissions = new Permissions(args.network, signer)
         const result = await permissions.createAgreement(args.provider as string)
         console.log(result)
     })
-    .command("set-agreement-raw <provider>", "Create an agreement with a particular app provider via raw transaction", providerBuilder, async (args) => {
+    .command("set-agreement-raw <provider>", "Create an agreement with a particular service provider via raw transaction", providerBuilder, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const spender = process.env.SPENDER || args.spender
         const permissions = new Permissions(args.network, spender)
         const result = await permissions.createAgreementRaw(args.provider as string, signer as string)
         console.log(result)
     })
-    .command("revoke-agreement <provider>", "Revoke an agreement with a particular app provider", () => {} , async (args) => {
+    .command("revoke-agreement <provider>", "Revoke an agreement with a particular service provider", () => {} , async (args) => {
         const signer = process.env.SIGNER || args.signer
         const permissions = new Permissions(args.network, signer)
         const result = await permissions.revokeAgreement(args.provider as string)
         console.log(result)
     })
-    .command("revoke-agreement-raw <provider>", "Revoke an agreement with a particular app provider via raw transaction", () => {}, async (args) => {
+    .command("revoke-agreement-raw <provider>", "Revoke an agreement with a particular service provider via raw transaction", () => {}, async (args) => {
         const signer = process.env.SIGNER || args.signer
         const spender = process.env.SPENDER || args.spender
         const permissions = new Permissions(args.network, spender)

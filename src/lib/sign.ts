@@ -58,12 +58,12 @@ export async function deletePartyRaw(wallet: ethers.Wallet) {
     return sign(txMsg as string, wallet)
 }
 
-export async function setAppRaw(name: string, url: string, permissions: number[], wallet: ethers.Wallet) {
+export async function setServiceRaw(name: string, url: string, permissions: number[], wallet: ethers.Wallet) {
     const txMsg = soliditySha3(name, url, ...permissions)
     return sign(txMsg as string, wallet)
 }
 
-export async function deleteAppRaw(wallet: ethers.Wallet) {
+export async function deleteServiceRaw(wallet: ethers.Wallet) {
   const txMsg = soliditySha3(wallet.address)
   return sign(txMsg as string, wallet)
 }

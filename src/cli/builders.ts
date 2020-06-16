@@ -81,12 +81,12 @@ export const setPartyModulesBuilder = (context: yargs.Argv) => {
         })
 }
 
-export const setAppBuilder = (context: yargs.Argv) => {
+export const setServiceBuilder = (context: yargs.Argv) => {
     context
         .option("name", {
             string: true,
             default: "",
-            describe: "Name of the App"
+            describe: "Name of the Service"
         })
         .option("url", {
             alias: "u",
@@ -98,13 +98,13 @@ export const setAppBuilder = (context: yargs.Argv) => {
             alias: "p",
             array: true,
             choices: ["FORWARD_ALL", "FORWARD_ALL_SENDER", "FORWARD_ALL_RECEIVER", "FORWARD_MODULE_LOCATIONS_SENDER", "FORWARD_MODULE_LOCATIONS_RECEIVER", "FORWARD_MODULE_SESSIONS_SENDER", "FORWARD_MODULE_SESSIONS_RECEIVER", "FORWARD_MODULE_CDRS_SENDER", "FORWARD_MODULE_CDRS_RECEIVER", "FORWARD_MODULE_TARIFFS_SENDER", "FORWARD_MODULE_TARIFFS_RECEIVER", "FORWARD_MODULE_TOKENS_SENDER", "FORWARD_MODULE_TOKENS_RECEIVER", "FORWARD_MODULE_COMMANDS_SENDER", "FORWARD_MODULE_COMMANDS_RECEIVER", "FORWARD_MODULE_CHARGINGPROFILES_SENDER", "FORWARD_MODULE_CHARGINGPROFILES_RECEIVER"],
-            describe: "List of required permissions that the App needs."
+            describe: "List of required permissions that the Service needs."
         })
 }
 
 export const providerBuilder = (context: yargs.Argv) => {
     context
         .positional("provider", {
-            describe: "Address of the App provider the agreement should be for"
+            describe: "Address of the Service provider the agreement should be for"
         })
 }

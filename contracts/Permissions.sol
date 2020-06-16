@@ -27,24 +27,24 @@ contract Permissions {
     /**
      * EVENTS
      */
-    event AppUpdate(
+    event ServiceUpdate(
         string name,
         string url,
         uint[] permissions,
         address provider
     );
 
-    event AppAgreement(
+    event ServiceAgreement(
         address user,
         address provider
     );
     
 
     /**
-     * APP PROVIDERS
+     * SERVICE PROVIDERS
      */
 
-    struct App {
+    struct Service {
         string name;
         string url;
         uint[] permissions;
@@ -56,8 +56,8 @@ contract Permissions {
     // above to check existence
     mapping(address => bool) private uniqueProviders;
 
-    // app storage linked to a particular provider (must have a registry party listing)
-    mapping(address => App) private apps;
+    // service storage linked to a particular provider (must have a registry party listing)
+    mapping(address => Service) private services;
 
     // create registry dependency using its deployed address
     constructor(address registryAddress) public {
@@ -65,19 +65,19 @@ contract Permissions {
     }
 
     /**
-     * Add or update an OCN App entry
-     * @param name name of the app
+     * Add or update an OCN Service entry
+     * @param name name of the service
      * @param url optional public url for more information
-     * @param permissions array of permissions required by the app
+     * @param permissions array of permissions required by the service
      */
-    function setApp(address provider, string memory name, string memory url, uint[] memory permissions) private  {
+    function setService(address provider, string memory name, string memory url, uint[] memory permissions) private  {
         // get the node operator of an OCPI party to determine if they are already in the Registry
         (address operator, ) = registry.getOperatorByAddress(provider);
-        require(operator != address(0), "Trying to register an app without party listing in Registry.");
+        require(operator != address(0), "Trying to register a service without party listing in Registry.");
         require(permissions.length > 0, "No permissions given.");
 
-        // add or overwrite app list entry for sender
-        apps[provider] = App(name, url, permissions);
+        // add or overwrite service list entry for sender
+        services[provider] = Service(name, url, permissions);
 
         // add to unique owners list if not seen before (iterating over an array is costly)
         if (uniqueProviders[provider] == false) {
@@ -85,16 +85,16 @@ contract Permissions {
             uniqueProviders[provider] = true;
         }
 
-        emit AppUpdate(name, url, permissions, provider);
+        emit ServiceUpdate(name, url, permissions, provider);
     }
 
-    // set App using msg.sender as owner (direct transaction)
-    function setApp(string memory name, string memory url, uint[] memory permissions) public {
-        setApp(msg.sender, name, url, permissions);
+    // set Service using msg.sender as owner (direct transaction)
+    function setService(string memory name, string memory url, uint[] memory permissions) public {
+        setService(msg.sender, name, url, permissions);
     }
 
-    // set App using signer as owner (raw transaction)
-    function setAppRaw(
+    // set Service using signer as owner (raw transaction)
+    function setServiceRaw(
         string memory name,
         string memory url,
         uint[] memory permissions,
@@ -104,11 +104,11 @@ contract Permissions {
     ) public {
         bytes32 paramHash = keccak256(abi.encodePacked(name, url, permissions));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
-        setApp(signer, name, url, permissions);
+        setService(signer, name, url, permissions);
     }
 
-    // read app data
-    function getApp(address provider) public view returns (
+    // read service data
+    function getService(address provider) public view returns (
             bytes2 countryCode,
             bytes3 partyId,
             string memory name,
@@ -116,37 +116,37 @@ contract Permissions {
             uint[] memory permissions
         ) {
             (countryCode, partyId,,,,,) = registry.getPartyDetailsByAddress(provider);
-            name = apps[provider].name;
-            url = apps[provider].url;
-            permissions = apps[provider].permissions;
+            name = services[provider].name;
+            url = services[provider].url;
+            permissions = services[provider].permissions;
     }
 
     /**
-     * Delete OCN App entry
-     * @param provider the app provider address (owner of the app)
+     * Delete OCN Service entry
+     * @param provider the service provider address (owner of the service)
      */
-    function deleteApp(address provider) private {
-        // check the app list entry
-        require(uniqueProviders[provider] == true, "Cannot delete app that does not exist.");
-        App memory details = apps[provider];
+    function deleteService(address provider) private {
+        // check the service list entry
+        require(uniqueProviders[provider] == true, "Cannot delete service that does not exist.");
+        Service memory details = services[provider];
 
-        // delete app list entry for sender
-        delete apps[provider];
+        // delete service list entry for sender
+        delete services[provider];
         uniqueProviders[provider] = false;
 
-        emit AppUpdate("", "", details.permissions, provider);
+        emit ServiceUpdate("", "", details.permissions, provider);
     }
 
-    // delete App using msg.sender as owner (direct transaction)
-    function deleteApp() public {
-        deleteApp(msg.sender);
+    // delete Service using msg.sender as owner (direct transaction)
+    function deleteService() public {
+        deleteService(msg.sender);
     }
 
-    // delete App using signer as owner (raw transaction)
-    function deleteAppRaw(address provider, uint8 v, bytes32 r, bytes32 s) public {
+    // delete Service using signer as owner (raw transaction)
+    function deleteServiceRaw(address provider, uint8 v, bytes32 r, bytes32 s) public {
         bytes32 paramHash = keccak256(abi.encodePacked(provider));
         address signer = ecrecover(keccak256(abi.encodePacked(prefix, paramHash)), v, r, s);
-        deleteApp(signer);
+        deleteService(signer);
     }
 
     // return list of owners
@@ -155,7 +155,7 @@ contract Permissions {
     }
 
     /**
-     * APP USERS
+     * SERVICE USERS
      */
 
     // stores agreements (user => provider => true/false)
@@ -165,19 +165,19 @@ contract Permissions {
     mapping(address => address[]) private providersOf;
 
     /**
-     * Binds an app user to provider, granting the app any given permissions
-     * @param user the app user addresss
-     * @param provider the app provider address (owner of the app)
+     * Binds a service user to provider, granting the service any given permissions
+     * @param user the service user addresss
+     * @param provider the service provider address (owner of the service)
      */
     function createAgreement(address user, address provider) private {
         (address operator, ) = registry.getOperatorByAddress(user);
-        require(operator != address(0), "App user has no party listing in Registry.");
-        require(uniqueProviders[provider] == true, "Provider has no registered App.");
+        require(operator != address(0), "Service user has no party listing in Registry.");
+        require(uniqueProviders[provider] == true, "Provider has no registered Service.");
         require(userAgreements[user][provider] == false, "Agreement already made between user and provider.");
         userAgreements[user][provider] = true;
         providersOf[user].push(provider);
 
-        emit AppAgreement(user, provider);
+        emit ServiceAgreement(user, provider);
     }
 
     // create agreement using direct transaction
@@ -193,18 +193,18 @@ contract Permissions {
     }
 
     /**
-     * revoke agreement of app
-     * @param user the app user addresss
-     * @param provider the app provider address (owner of the app)
+     * revoke agreement of service
+     * @param user the service user addresss
+     * @param provider the service provider address (owner of the service)
      */
     function revokeAgreement(address user, address provider) private {
         (address operator, ) = registry.getOperatorByAddress(user);
-        require(operator != address(0), "App user has no party listing in Registry.");
-        require(uniqueProviders[provider] == true, "Provider has no registered App.");
+        require(operator != address(0), "Service user has no party listing in Registry.");
+        require(uniqueProviders[provider] == true, "Provider has no registered Service.");
         require(userAgreements[user][provider] == true, "No Agreement made between user and provider.");
         userAgreements[user][provider] = false;
 
-        emit AppAgreement(user, provider);
+        emit ServiceAgreement(user, provider);
     }
 
     // revoke agreement using direct transaction

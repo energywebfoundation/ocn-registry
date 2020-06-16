@@ -51,7 +51,7 @@ export enum Module {
     tokens
 }
 
-export interface App {
+export interface Service {
     name: string
     url: string
     permissions: Permission[]
