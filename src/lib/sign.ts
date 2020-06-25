@@ -57,3 +57,23 @@ export async function deletePartyRaw(wallet: ethers.Wallet) {
     const txMsg = soliditySha3(wallet.address)
     return sign(txMsg as string, wallet)
 }
+
+export async function setServiceRaw(name: string, url: string, permissions: number[], wallet: ethers.Wallet) {
+    const txMsg = soliditySha3(name, url, ...permissions)
+    return sign(txMsg as string, wallet)
+}
+
+export async function deleteServiceRaw(wallet: ethers.Wallet) {
+  const txMsg = soliditySha3(wallet.address)
+  return sign(txMsg as string, wallet)
+}
+
+export async function createAgreementRaw(provider: string, wallet: ethers.Wallet) {
+    const txMsg = soliditySha3(provider)
+    return sign(txMsg as string, wallet)
+}
+
+export async function revokeAgreementRaw(provider: string, wallet: ethers.Wallet) {
+  const txMsg = soliditySha3(provider)
+  return sign(txMsg as string, wallet)
+}

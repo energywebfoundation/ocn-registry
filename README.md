@@ -1,12 +1,12 @@
 # Open Charging Network Registry
 
-Registry smart contract for OCN Node operator and OCPI party listings. For Ethereum-based networks.
+Decentralized Registry smart contracts for Node operators, OCPI party and Service providers. For Ethereum-based networks.
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a24c1584300a4c758d8da109a3e6cb80)](https://www.codacy.com?utm_source=bitbucket.org&amp;utm_medium=referral&amp;utm_content=shareandcharge/registry&amp;utm_campaign=Badge_Grade)
 
 ## Pre-amble
 
-There are a few concepts which first need to be explained. The Registry smart contract works on Ethereum-based 
+There are a few concepts which first need to be explained. The Registry smart contracts works on Ethereum-based 
 blockchains. That might be [ganache](https://github.com/trufflesuite/ganache-cli) if running a local development 
 blockchain, or the pre-production or production chain of the 
 [Energy Web Foundation's blockchain](https://energyweb.atlassian.net/wiki/spaces/EWF/overview). These chains use 
@@ -35,7 +35,20 @@ Providers) to link their services to a registered node.
 Note that the registry listing must be done by the OCPI party before an OCN Node accepts their credentials 
 registration, so that the OCN Node can ensure the party has correctly linked themselves to that node in the registry. 
 
-#### Example steps:
+### Service Providers and Users
+
+An OCN Service is an OCPI party that requires additional permissions from their customers. We make this distinction
+from other "Services" that might only require customers to send OCPI messages (including custom OCPI modules) directly.
+Such permissions could include the forwarding of session or charge detail record data, for example in a payment
+service. Once a customer/user has agreed to the Service's permissions, the OCN Node tied to the customer will automate
+any such required permissions, lessening the cost of integration with a service.
+
+OCN Services are first and foremost OCPI parties - they must be listed in the Registry smart contract. To be granted
+the aforementioned permissions, such a party must then list their service and the permissions required in a separate
+smart contract, entitled "Permissions". Thereafter, a user can make their agreement explicit in the same smart
+contract.
+
+#### Example OCPI Party connection steps:
 
 1. Operator signs a transaction stating they run the OCN Node on domain `https://node.ocn.org`. The address of their
 wallet (`0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4`), used to sign the transaction, now points to the domain name. 
@@ -46,7 +59,8 @@ OCN Node operator.
 
 3. OCPI party does the credentials registration handshake with the OCN Node at `https://node.ocn.org`.
 
-4. Party is now able to send and receive OCPI requests from other OCPI parties on the network. 
+4. Party is now able to send and receive OCPI requests from other OCPI parties on the network. Likewise, they gain
+access to the setting of Service permissions. 
 
 ---
 
@@ -64,45 +78,104 @@ There are several ways to interact with the OCN Registry, including:
 
 ### Getting started
 
-Clone this repository or install the registry npm package:
+Install the registry npm package:
 
-#### Using this repository
+```
+npm install -g @shareandcharge/ocn-registry
+```
+
+Alternatively, it is possible to clone this repository:
 
 ```
 git clone https://bitbucket.org/shareandcharge/ocn-registry.git
 cd ocn-registry
 npm install
-npx ts-node src --help
 ```
 
-#### Using the npm package
+### Basic Usage
+
+To make sure your installation is correctly working, verify with the following command, which will 
+print the version number:
+```
+$ ocn-registry --version
+1.0.0
+```
+
+If the repository has been cloned instead, the CLI can be accessed via `npx`:
+```
+$ npx ts-node src/cli --version
+1.0.0
+```
+
+For the remainder of the documentation, it will be assumed that the CLI npm package has been installed globally.
+
+#### Getting Help
+
+The CLI and all of its sub-commands have help text relating to usage. The top-level help flag prints all possible
+sub-commands which can be used:
 
 ```
-npm install -g @shareandcharge/registry
-ocn-registry --help
+$ ocn-registry --help
+[...]
+
+Commands:
+  cli get-node <address>               Get OCN Node operator entry by their
+                                       wallet address
+  cli list-nodes                       Get all OCN Nodes listed in registry
+
+[...]
+``` 
+
+Meanwhile, using the help flag on a particular sub-command will show more detailed information:
+```
+$ ocn-registry get-party --help
+[...]
+
+Options:
+  --network, --net, -n  Specifies the target network.
+                          [choices: "local", "volta", "prod"] [default: "local"]
+  --address, -a         Wallet address of the party                     [string]
+  --credentials, -c     OCPI country_code (ISO-3166 alpha-2) and party_id
+                        (ISO-15118)                                      [array]
+
+[...]
 ```
 
 #### Setting the signer
 
 The private keys of the signer (and optionally spender) are needed for each transaction (modifying state of the 
-contract). Contract calls (i.e. getting data) do not require this. 
+contract). Think of this like setting your credentials for a cloud infrastructure provider's CLI (where an 
+environment variable like `AWS_ACCESS_KEY` dictates to the AWS CLI which user/role is accessing assets). Note that
+contract calls (i.e. reading data) do not require this as data is public. 
 
-This can be done in two ways: environment variables or command line flags.
+Setting this can be done in two ways: environment variables or command line flags.
+
+The first method allows all subsequent commands to use the same value for signer/spender. This also means that
+it is not necessary to state the signer with a command line flag.
+
+Use `export` on Linux/MacOS to set your shell variables:
 
 ```
-EXPORT SIGNER=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd
+export SIGNER=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd
 ```
 
 If using a raw command, the spender is also required:
 
 ```
-EXPORT SENDER=0x2f0810c5fc949c846ff64edb26b0b00ca28effaffb9ac867a7b9256c034fe849
+export SENDER=0x2f0810c5fc949c846ff64edb26b0b00ca28effaffb9ac867a7b9256c034fe849
 ```
 
 **Important: do not use these private keys outside of development! They were generated for this guide only.**
 
-Alternatively, flags allow setting the signer and spender for each command. Add `--help` to any command to get 
-information about available flags.
+Alternatively, flags allow setting the signer and spender for each command:
+
+```
+Transactions:
+  --signer, -s   Data owner's private key. Required for modifying contract
+                 state.                                                 [string]
+  --spender, -x  Spender's private key. Required for sending raw transactions.
+                                                                        [string]
+```
 
 
 #### Choosing the network
@@ -120,7 +193,7 @@ for production.
 
 ### Get an operator's node
 
-To check the domain of a single node operator on the network, use:
+To check the domain of a single node operator on a particular network, use:
 
 ```
 ocn-registry get-node 0xEada1b2521115e07578DBD9595B52359E9900104
@@ -161,16 +234,11 @@ ocn-registry set-node-raw https://node.provider.net
 Remember to set the signer AND spender for the raw transaction. If not using environment variables, set with the following flags:
 
 ```
-ocn-registry set-node-raw https://node.provider.net
-        --signer=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd 
+ocn-registry set-node-raw https://node.provider.net \
+        --signer=0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd \
         --spender=0x2f0810c5fc949c846ff64edb26b0b00ca28effaffb9ac867a7b9256c034fe849
 ```
 
-Type `--help` after any command for more information.
-
-```
-ocn-registry set-node-raw --help
-```
 
 ### De-listing a node
 
@@ -192,8 +260,8 @@ Check the registered information of a given party using their address or OCPI cr
 `party_id`):
 
 ```
-ocn-registry get-party -a 0x0B2E57DDB616175950e65dE47Ef3F5BA3bc29979
-ocn-registry get-party -c CH CPO
+ocn-registry get-party --address 0x0B2E57DDB616175950e65dE47Ef3F5BA3bc29979
+ocn-registry get-party --credentials CH CPO
 ```
 
 ### Get all parties
@@ -207,6 +275,7 @@ ocn-registry list-parties
 ### Listing a party
 
 To list a party, the following information is required:
+
 - `country_code` and `party_id`
 - role
 - OCN Node operator wallet address
@@ -218,18 +287,24 @@ The following commands can be used to both create and update the party informati
 
 Using a direct transaction:
 ```
-ocn-registry set-party -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry set-party --credentials CH CPO \
+    --roles CPO \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 Using a raw transaction:
 ```
-ocn-registry set-party-raw -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry set-party-raw --credentials CH CPO 
+    --roles CPO \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 #### Scenario 2: party_id with multiple roles
 
 ```
-ocn-registry set-party -c CH ABC -r CPO EMSP -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+ocn-registry set-party --credentials CH ABC \
+    -roles CPO EMSP \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
 ```
 
 #### Scenario 3: platform with multiple roles under different `party_id`s
@@ -237,8 +312,16 @@ ocn-registry set-party -c CH ABC -r CPO EMSP -o 0x9bC1169Ca09555bf2721A5C9eC6D69
 In this case, the platform must use different wallets for each `party_id`:
 
 ```
-ocn-registry set-party -c CH CPO -r CPO -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 -s 0xd37f60f3a7c78a72d24e50b9105879c89d249e299699ba762d890276dea73fea
-ocn-registry set-party -c CH MSP -r EMSP -o 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 -s 0x0bdea97cf8736a66f85283d7b0241b5cba51edd809a67af5e8971f441aa8e22b
+ocn-registry set-party --credentials CH CPO \
+    --roles CPO \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 \
+    --signer 0xd37f60f3a7c78a72d24e50b9105879c89d249e299699ba762d890276dea73fea
+```
+```
+ocn-registry set-party --credentials CH MSP \
+    --roles EMSP \
+    --operator 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4 \
+    --signer 0x0bdea97cf8736a66f85283d7b0241b5cba51edd809a67af5e8971f441aa8e22b
 ```
 
 ### Listing OCPI modules implemented by the party
@@ -312,6 +395,91 @@ And with raw transaction:
 ocn-registry delete-party-raw
 ```
 
+### Get all services' details
+
+```
+ocn-registry list-services
+```
+
+### Get a specific service's details
+
+Use the positional argument for the provider of the Service (the Ethereum address of the owner):
+
+```
+ocn-registry get-service 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+```
+
+### List a service
+
+Ensure that before adding a service to the Registry, the owner of the Service is listed as an OCPI party.
+
+To add a Service, use the `set-service` command. Note that the name and URL are optional - their aim is
+to provide more information for potential customers.
+
+Warning: you may encounter errors with names containing spaces. You can run this command as many times
+as necessary - it will always overwrite your current entry.
+
+```
+ocn-registry set-service --name 'Smart Payment Service' \
+    --url https://smart.payment.service \
+    --permissions FORWARD_SENDER
+```
+
+The `--permissions` flag takes an array of permissions. For example, the following would require
+all requests sent to the receiver interfaces of the `sessions` and `cdrs` module to be forwarded
+to the service:
+```
+--permissions FORWARD_SESSIONS_RECEIVER FORWARD_CDRS_RECEIVER
+```
+
+See the [full list of permissions](Permissions.md) for more. These are the permissions
+which the OCN Node has currently implmented, but this list can be expanded in the future.
+
+Note that this list is also available from the command line:
+```
+ocn-registry set-service --help
+```
+
+### Delete a service
+
+use the following command to remove a service from the Registry
+
+```
+ocn-registry delete-service
+```
+
+### Get service agreements for a user
+
+To list all agreements for a particular user, using their address or OCPI credentials
+(`country_code` and `party_id`):
+
+```
+ocn-registry get-agreements --address 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+```
+or
+```
+ocn-registry get-agreements --credentials DE MSP
+```
+
+### Agree to service permissions
+
+As a service user, agree to a service's permissions using the `set-agreement` command. The positional
+provider argument is the Service owner's Ethereum address (their identity on the OCN).
+
+```
+ocn-registry set-agreement 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+```
+
+### Revoke service permissions
+
+Service user can revoke a service's permissions using the `revoke-agreement` command. The positional
+provider argument is the Service owner's Ethereum address (their identity on the OCN).
+
+```
+ocn-registry revoke-agreement 0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4
+```
+
+
 ---
 
 ## [TypeScript Library](#typescript-library)
@@ -325,15 +493,16 @@ In your project source file, import the registry:
 TypeScript:
 
 ```ts
-import { Registry } from "@shareandcharge/registry"
+import { Registry, Permissions } from "@shareandcharge/registry"
 ```
 JavaScript:
 
 ```js
 const Registry = require("@shareandcharge/registry").Registry
+const Permissions = require("@shareandcharge/registry").Permissions
 ```
 
-Then, instantiate the Registry class with the environment (`"local"` or `"volta"`). Optionally set the signer to gain
+Then, instantiate each class with the required environment (`"local"` or `"volta"`). Optionally set the signer to gain
 access to write methods on the contract:
 
 ```ts
@@ -341,8 +510,8 @@ const registryReadOnly = new Registry("local")
 console.log(registryReadOnly.mode)
 // "r"
 
-const registryReadWrite = new Registry("local", "0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd")
-console.log(registryReadWrite.mode)
+const permissionsReadWrite = new Permissions("local", "0xbe367b774603c65850ee2cf479df809174f95cdb847483db2a6bcf1aad0fa5fd")
+console.log(permissionsReadWrite.mode)
 // "r+w"
 ```
 
@@ -351,19 +520,20 @@ And use the contract:
 ```ts
 registryReadOnly.getAllNodes().then(console.log)
 
-registryReadWrite.setNode("https://node.provider.net").then(console.log)
+permissionsReadWrite.setService("My Awesome Service", "https://my.awesome.service", [1, 2]).then(console.log)
 ```
 
 ---
 
 ## [Java Library](#java-library)
 
-An auto-generated Java library has been provided in `./java`.
+Auto-generated Java libraries are provided in `./java`.
 
-Copy it to a project's sourcepath, then connect to it using Web3j:
+Copy to a project's sourcepath, then connect using Web3j:
 
 ```kotlin
 import snc.openchargingnetwork.contracts.Registry
+import snc.openchargingnetwork.contracts.Permissions
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.ClientTransactionManager
@@ -375,11 +545,13 @@ val web3 = Web3j.build(HttpService("http://localhost:8544"))
 val txManager = ClientTransactionManager(web3, "0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4")
 val gasProvider = StaticGasProvider(0.toBigInteger(), 10000000.toBigInteger())
 val registry = Registry.load(contractAddress, web3, txManager, gasProvider)
+val permissions = Permissions.load(contractAddress, web3, txManager, gasProvider)
 ```
 
 And use it:
 ```kotlin
 val tx = registry.setNode("https://node.provider.net").sendAsync().get()
+val tx2 = permissions.setService("Awesome Service", "https://awesome.service", listOf(1, 2)).sendAsync().get()
 ```
 
 ---
@@ -429,6 +601,7 @@ The Java wrapper can be updated using `web3j`:
 ```
 npm run compile
 web3j truffle generate ./build/contracts/Registry.json -o ./java -p snc.openchargingnetwork.contracts
+web3j truffle generate ./build/contracts/Permissions.json -o ./java -p snc.openchargingnetwork.contracts
 ```
 
 ### Publishing new versions
@@ -452,6 +625,8 @@ npm publish
 ```
 
 ## Docker
+
+TODO: update for Permissions contract.
 
 You may also use Docker to aid development of other services using the registry. Simply run 
 `docker-compose up` to start ganache and have the contracts deployed automatically. The registry 
