@@ -35,18 +35,26 @@ contract('Permissions', function (accounts) {
       await registry.setPartyRaw(wallet.address, party.country, party.id, [5], accounts[1], sig.v, sig.r, sig.s)
     }
   })
+  
+  const serviceInfo = [
+    {name: "ezPAY", url: "http://ez.pay.io"},
+    {name: "", url: "http://ez.pay.io"},
+    {name: "ezPAY", url: ""},
+    {name: "", url: ""}
+  ]
 
-  it("should add service", async () => {
-    const name = "ezPAY"
-    const url = "http://ez.pay.io"
-    const needs = [0, 1]
-    await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], { from: accounts[2] })
-    await permissions.setService(name, url, needs, { from: accounts[2] })
-    const actual = await permissions.getService(accounts[2])
-    assert.equal(actual.name, name)
-    assert.equal(actual.url, url)
-    assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
+  serviceInfo.forEach((service) => {
+    it(`should add service with name: ${service.name}, url: ${service.url}`, async () => {
+      const needs = [0, 1]
+      await registry.setParty(toHex("DE"), toHex("MSP"), [5], accounts[1], { from: accounts[2] })
+      await permissions.setService(service.name, service.url, needs, { from: accounts[2] })
+      const actual = await permissions.getService(accounts[2])
+      assert.equal(actual.name, service.name)
+      assert.equal(actual.url, service.url)
+      assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
+    })
   })
+
 
   it("should update service", async () => {
     const name = "ezPAY"
@@ -63,16 +71,16 @@ contract('Permissions', function (accounts) {
     assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
   })
 
-  it("should set service using raw transaction", async () => {
-    const name = "ezPAY"
-    const url = "http://ez.pay.io"
-    const needs = [0, 1]
-    const signature = await sign.setServiceRaw(name, url, needs, wallet)
-    await permissions.setServiceRaw(name, url, needs, signature.v, signature.r, signature.s)
-    const actual = await permissions.getService(wallet.address)
-    assert.equal(actual.name, name)
-    assert.equal(actual.url, url)
-    assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
+  serviceInfo.forEach((service) => {
+    it(`should set service with name: ${service.name}, url: ${service.url} using raw transaction`, async () => {
+      const needs = [0, 1]
+      const signature = await sign.setServiceRaw(service.name, service.url, needs, wallet)
+      await permissions.setServiceRaw(service.name, service.url, needs, signature.v, signature.r, signature.s)
+      const actual = await permissions.getService(wallet.address)
+      assert.equal(actual.name, service.name)
+      assert.equal(actual.url, service.url)
+      assert.deepEqual(allToBN(actual.permissions), allToBN(needs))
+    })
   })
 
   it("should delete service", async () => {

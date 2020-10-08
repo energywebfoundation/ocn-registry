@@ -38,7 +38,8 @@ async function deletePartyRaw(wallet) {
 }
 
 async function setServiceRaw(name, url, permissions, wallet) {
-  const txMsg = utils.soliditySha3(name, url, ...permissions)
+  const optionalParams = [name, url].filter(Boolean)
+  const txMsg = utils.soliditySha3(...optionalParams, ...permissions)
   return sign(txMsg, wallet)
 }
 
