@@ -162,7 +162,7 @@ export class Permissions extends ContractWrapper {
         this.verifyWritable()
         const wallet = new ethers.Wallet(signer)
         const signature = await createAgreementRaw(provider, wallet)
-        const tx = await this.contract.createAgreementRaw(provider, signature.s, signature.r, signature.s)
+        const tx = await this.contract.createAgreementRaw(provider, signature.v, signature.r, signature.s)
         await tx.wait()
         return tx
     }
