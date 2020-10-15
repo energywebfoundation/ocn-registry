@@ -624,6 +624,12 @@ Publish:
 npm publish
 ```
 
+Optionally, tag as "stable":
+
+```
+npm dist-tag add @shareandcharge/ocn-registry@<version> stable
+```
+
 ## Docker
 
 You may also use Docker to aid development of other services using the registry. Simply run 
