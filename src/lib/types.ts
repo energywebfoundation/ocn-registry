@@ -50,3 +50,35 @@ export enum Module {
     tariffs,
     tokens
 }
+
+export interface Service {
+    name: string
+    url: string
+    permissions: Permission[]
+    provider: {
+        address: string
+        countryCode: string
+        partyId: string
+    }
+}
+
+// examples; not full list
+export enum Permission {
+    FORWARD_ALL,
+    FORWARD_ALL_SENDER,
+    FORWARD_ALL_RECEIVER,
+    FORWARD_MODULE_LOCATIONS_SENDER,
+    FORWARD_MODULE_LOCATIONS_RECEIVER,
+    FORWARD_MODULE_SESSIONS_SENDER,
+    FORWARD_MODULE_SESSIONS_RECEIVER,
+    FORWARD_MODULE_CDRS_SENDER,
+    FORWARD_MODULE_CDRS_RECEIVER,
+    FORWARD_MODULE_TARIFFS_SENDER,
+    FORWARD_MODULE_TARIFFS_RECEIVER,
+    FORWARD_MODULE_TOKENS_SENDER,
+    FORWARD_MODULE_TOKENS_RECEIVER,
+    FORWARD_MODULE_COMMANDS_SENDER,
+    FORWARD_MODULE_COMMANDS_RECEIVER,
+    FORWARD_MODULE_CHARGINGPROFILES_SENDER,
+    FORWARD_MODULE_CHARGINGPROFILES_RECEIVER
+}

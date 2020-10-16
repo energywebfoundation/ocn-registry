@@ -57,3 +57,26 @@ export async function deletePartyRaw(wallet: ethers.Wallet) {
     const txMsg = soliditySha3(wallet.address)
     return sign(txMsg as string, wallet)
 }
+
+export async function setServiceRaw(name: string, url: string, permissions: number[], wallet: ethers.Wallet) {
+  // Boolean filter is used because soliditySha3 considers empty string to have a value.
+  // This causes the resulting hash value to be different from solidity's keccak256.
+  const optionalParams = [name, url].filter(Boolean)
+  const txMsg = soliditySha3(...optionalParams, ...permissions)
+  return sign(txMsg as string, wallet)
+}
+
+export async function deleteServiceRaw(wallet: ethers.Wallet) {
+  const txMsg = soliditySha3(wallet.address)
+  return sign(txMsg as string, wallet)
+}
+
+export async function createAgreementRaw(provider: string, wallet: ethers.Wallet) {
+    const txMsg = soliditySha3(provider)
+    return sign(txMsg as string, wallet)
+}
+
+export async function revokeAgreementRaw(provider: string, wallet: ethers.Wallet) {
+  const txMsg = soliditySha3(provider)
+  return sign(txMsg as string, wallet)
+}

@@ -71,12 +71,40 @@ export const setPartyModulesBuilder = (context: yargs.Argv) => {
             alias: "si",
             array: true,
             choices: ["cdrs", "chargingprofiles", "commands", "locations", "sessions", "tariffs", "tokens"],
-            describe: "OCPI module sender interface implementations"
+            describe: "OCPI module sender interface implementations."
         })
         .option("receiver-interface", {
             alias: "ri",
             array: true, 
             choices: ["cdrs", "chargingprofiles", "commands", "locations", "sessions", "tariffs", "tokens"],
-            describe: "OCPI module receiver interface implementations"
+            describe: "OCPI module receiver interface implementations."
+        })
+}
+
+export const setServiceBuilder = (context: yargs.Argv) => {
+    context
+        .option("name", {
+            string: true,
+            default: "",
+            describe: "Name of the Service"
+        })
+        .option("url", {
+            alias: "u",
+            string: true,
+            default: "",
+            describe: "Public URL where users can find further information."
+        })
+        .option("permissions", {
+            alias: "p",
+            array: true,
+            choices: ["FORWARD_ALL", "FORWARD_ALL_SENDER", "FORWARD_ALL_RECEIVER", "FORWARD_MODULE_LOCATIONS_SENDER", "FORWARD_MODULE_LOCATIONS_RECEIVER", "FORWARD_MODULE_SESSIONS_SENDER", "FORWARD_MODULE_SESSIONS_RECEIVER", "FORWARD_MODULE_CDRS_SENDER", "FORWARD_MODULE_CDRS_RECEIVER", "FORWARD_MODULE_TARIFFS_SENDER", "FORWARD_MODULE_TARIFFS_RECEIVER", "FORWARD_MODULE_TOKENS_SENDER", "FORWARD_MODULE_TOKENS_RECEIVER", "FORWARD_MODULE_COMMANDS_SENDER", "FORWARD_MODULE_COMMANDS_RECEIVER", "FORWARD_MODULE_CHARGINGPROFILES_SENDER", "FORWARD_MODULE_CHARGINGPROFILES_RECEIVER"],
+            describe: "List of required permissions that the Service needs."
+        })
+}
+
+export const providerBuilder = (context: yargs.Argv) => {
+    context
+        .positional("provider", {
+            describe: "Address of the Service provider the agreement should be for"
         })
 }

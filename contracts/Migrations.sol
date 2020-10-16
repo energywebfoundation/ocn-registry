@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.15;
 
 contract Migrations {
     address public owner;

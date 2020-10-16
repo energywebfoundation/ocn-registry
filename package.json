@@ -1,6 +1,6 @@
 {
   "name": "@shareandcharge/ocn-registry",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Share & Charge registry smart contracts",
   "directories": {
     "test": "test"
@@ -8,9 +8,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/registry.js",
+  "main": "dist/library.js",
   "bin": {
-    "ocn-registry": "dist/index.js"
+    "ocn-registry": "dist/cli.js"
   },
   "files": [
     "*.json",
@@ -20,8 +20,6 @@
     "build": "tsc",
     "compile": "truffle compile",
     "test": "rm -Rf build && truffle test",
-    "lint": "solium -d contracts",
-    "cover": "solidity-coverage",
     "migrate": "truffle migrate",
     "migrate-docker": "truffle migrate --network=docker",
     "ganache": "ganache-cli -m \"candy maple cake sugar pudding cream honey rich smooth crumble sweet treat\" --port 8544 --accounts 20 --networkId=9 --gasLimit=10000000",
@@ -38,24 +36,23 @@
   },
   "homepage": "https://bitbucket.org/shareandcharge/registry",
   "devDependencies": {
-    "@types/chai": "^4.2.9",
-    "@types/mocha": "^7.0.1",
-    "@types/yargs": "^15.0.3",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^7.0.2",
+    "@types/yargs": "^15.0.4",
     "ganache-cli": "^6.9.1",
     "mkdirp": "^0.5.1",
-    "openzeppelin-solidity": "^2.5.0",
-    "solium": "^1.2.5",
-    "truffle": "^5.1.12",
+    "openzeppelin-solidity": "^2.5.1",
+    "truffle": "^5.1.25",
     "truffle-contract": "^4.0.31",
-    "truffle-flattener": "^1.4.2",
+    "truffle-flattener": "^1.4.4",
     "truffle-hdwallet-provider": "^1.0.17",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.7.5"
+    "ts-node": "^8.10.1",
+    "typescript": "^3.8.3"
   },
   "dependencies": {
     "bignumber.js": "^8.0.2",
-    "ethers": "^4.0.44",
-    "web3-utils": "^1.2.6",
-    "yargs": "^15.1.0"
+    "ethers": "^4.0.47",
+    "web3-utils": "^1.2.7",
+    "yargs": "^15.3.1"
   }
 }
