@@ -624,15 +624,19 @@ Publish:
 npm publish
 ```
 
+Optionally, tag as "stable":
+
+```
+npm dist-tag add @shareandcharge/ocn-registry@<version> stable
+```
+
 ## Docker
 
-TODO: update for Permissions contract.
-
 You may also use Docker to aid development of other services using the registry. Simply run 
-`docker-compose up` to start ganache and have the contracts deployed automatically. The registry 
-contract will always have the same owner and address:
+`docker-compose up` to start ganache and have the contracts deployed automatically. The registry and permissions contract will always have the same owner and addresses:
 
-- **Address**: `0x345cA3e014Aaf5dcA488057592ee47305D9B3e10`
+- **Registry Address**: `0x345cA3e014Aaf5dcA488057592ee47305D9B3e10`
+- **Permissions Address**: `0xf25186b5081ff5ce73482ad761db0eb0d25abfbf`
 - **Owner**: `0x627306090abaB3A6e1400e9345bC60c78a8BEf57`
 
 If you make changes to the contracts, run `docker-compose --build`. This will ensure that the

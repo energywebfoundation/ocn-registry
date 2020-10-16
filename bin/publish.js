@@ -25,14 +25,13 @@ const provider = config.provider ? config.provider() : new Web3.providers.HttpPr
 const contractNames = ['Registry', 'Permissions']
 
 const isDevelopment = network === 'development'
-const isProduction = network === 'production'
 
 async function publish() {
   const promises = contractNames.map(async contractName => {
     return new Promise((resolve, reject) => {
       const instance = contract(require('../build/contracts/' + contractName))
       instance.setProvider(provider)
-      if (network === "volta" && contractName === "Registry") {
+      if ((network === "volta" || network === "prod") && contractName === "Registry") {
         instance.at(process.env.REGISTRY_ADDRESS).then((res) => {
           resolve({
             name: instance.contractName,

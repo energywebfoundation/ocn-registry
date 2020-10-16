@@ -21,7 +21,7 @@ module.exports = function (deployer, network) {
         // always deploy both new contracts
         deployer.deploy(Registry)
             .then(() => deployer.deploy(Permissions, Registry.address))
-    } else if (network === "volta") {
+    } else if (network === "volta" || network === "prod") {
         // only deploy new Permissions contract using previously deployed Registry address (for now)
         const registryAddress = process.env.REGISTRY_ADDRESS
         if (!registryAddress) {
