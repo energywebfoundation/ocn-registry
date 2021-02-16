@@ -247,7 +247,7 @@ ocn-registry list-nodes
 
 ### Listing a node
 
-OCN Node operators can make their node visible on the network by adding it to the OCN Registry. Creating and updating a listing can be done using the same command.
+OCN Node operators can make their node visible on the network by adding it to the OCN Registry. Creating and updating a listing can be done using the same command. 
 
 **Note**: If changing the domain of an existing operator, call `delete-node` before `set-node` (see [issue #8](https://bitbucket.org/shareandcharge/ocn-registry/issues/8/))
 
