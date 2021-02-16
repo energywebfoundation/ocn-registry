@@ -14,9 +14,10 @@
     limitations under the License.
 */
 
-import { ethers } from "ethers";
+import { ethers } from "ethers"
 import { toHex } from "web3-utils"
-import { networks } from "../networks";
+import { networks } from "../networks"
+import { Contract, Network, Provider } from "../types/network"
 
 
 export class ContractWrapper {
@@ -31,12 +32,18 @@ export class ContractWrapper {
      */
     public mode: "r" | "r+w"
 
-    constructor(type: string, environment: string, signer?: string) {
+    constructor(type: string, environment: string, signer?: string, overrides?: Partial<Network>) {
         if (!networks[environment]) {
             throw new Error(`Option \"${environment}\" not found in configured networks.`)
         }
-        const provider = networks[environment].provider
-        const contract = networks[environment].contracts[type]
+        const provider: Provider = {
+            ...networks[environment].provider,
+            ...overrides?.provider
+        }
+        const contract: Contract = {
+            ...networks[environment].contracts[type],
+            ...overrides?.contracts?.[type]
+        }
 
         console.log(`connecting to ${provider.protocol}://${provider.host}:${provider.port}`)
 
@@ -48,12 +55,12 @@ export class ContractWrapper {
         } else {
             this.mode = "r"
         }
-    
+
         this.contract = new ethers.Contract(contract.address, contract.abi, this.wallet || this.provider)
     }
 
     protected verifyAddress(address: string): void {
-        try { 
+        try {
             ethers.utils.getAddress(address)
         } catch (err) {
             throw Error(`Invalid address. Expected Ethereum address, got "${address}".`)

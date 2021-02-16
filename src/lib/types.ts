@@ -24,7 +24,7 @@ export interface PartyDetails {
     partyId: string
     address: string
     roles: Role[]
-    modules: { 
+    modules: {
         sender: Module[]
         receiver: Module[]
     }

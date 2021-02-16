@@ -14,7 +14,9 @@
     limitations under the License.
 */
 
-export const networks = {
+import { Network } from "./types/network"
+
+export const networks: Record<string, Network> = {
 	local: {
         provider: {
             protocol: 'http',
