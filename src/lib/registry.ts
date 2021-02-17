@@ -14,19 +14,20 @@
     limitations under the License.
 */
 
-import { ethers } from "ethers";
+import { ethers } from "ethers"
 import { URL } from "url"
-import * as sign from "./sign";
+import * as sign from "./sign"
 import * as types from "./types"
-import { ContractWrapper } from "./contract-wrapper";
+import { Network } from "../types/network"
+import { ContractWrapper } from "./contract-wrapper"
 
 /**
  * Registry contract wrapper
  */
 export class Registry extends ContractWrapper {
 
-    constructor(environment: string, signer?: string) {
-        super("Registry", environment, signer)
+    constructor(environment: string, signer?: string, environmentOptions?: Partial<Network>) {
+        super("Registry", environment, signer, environmentOptions)
     }
 
     /**
@@ -64,7 +65,7 @@ export class Registry extends ContractWrapper {
 
     /**
      * Create or update a registry node operator listing. Uses the signer's wallet as configured
-     * in the constructor to identify the node operator. 
+     * in the constructor to identify the node operator.
      * @param domain the domain name/url to link to the operator's Etheruem wallet.
      */
     public async setNode(domain: string): Promise<ethers.providers.TransactionReceipt> {
@@ -78,8 +79,8 @@ export class Registry extends ContractWrapper {
     /**
      * Create or update a registry node operator listing using a raw transaction.
      * @param domain the domain name/url to link to the operator's Ethereum wallet.
-     * @param signer the private key of the owner of the registry listing. The signer configured in the 
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async setNodeRaw(domain: string, signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -102,8 +103,8 @@ export class Registry extends ContractWrapper {
 
     /**
      * Remove the registry listing of a given signer, using a raw transaction.
-     * @param signer the private key of the owner of the registry listing. The signer configured in the 
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async deleteNodeRaw(signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -113,7 +114,7 @@ export class Registry extends ContractWrapper {
         await tx.wait()
         return tx
     }
-    
+
 
     /**
      * Get full party details of a given OCPI party by their address
@@ -170,7 +171,7 @@ export class Registry extends ContractWrapper {
         this.verifyStringLen(countryCode, 2)
         this.verifyStringLen(partyId, 3)
         this.verifyAddress(operator)
-        
+
         const tx = await this.contract.setParty(this.toHex(countryCode), this.toHex(partyId), roles, operator)
         await tx.wait()
         return tx
@@ -184,8 +185,8 @@ export class Registry extends ContractWrapper {
      * @param roles list of roles implemented by party (i.e. might only be CPO, or the same "platform" could implement
      * EMSP and CPO roles under the same country_code/party_id).
      * @param operator the operator address of the OCN Node used by the party.
-     * @param signer the private key of the owner of the registry listing. The signer configured in the 
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async setPartyRaw(countryCode: string, partyId: string, roles: types.Role[], operator: string, signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -196,7 +197,7 @@ export class Registry extends ContractWrapper {
         const country = this.toHex(countryCode)
         const id = this.toHex(partyId)
 
-        const wallet = new ethers.Wallet(signer);
+        const wallet = new ethers.Wallet(signer)
         const sig = await sign.setPartyRaw(country, id, roles, operator, wallet)
         const tx = await this.contract.setPartyRaw(wallet.address, country, id, roles, operator, sig.v, sig.r, sig.s)
         await tx.wait()
@@ -206,7 +207,7 @@ export class Registry extends ContractWrapper {
     /**
      * Direct transaction to provide module interfaces supported by the signer's OCPI implementation.
      * Can also be used to delete previously-set party modules by providing empty arrays.
-     * (note: this is an opt-in feature). 
+     * (note: this is an opt-in feature).
      * @param sender array of sender interface role module Ids.
      * @param receiver array of receiver interface role module Ids.
      */
@@ -220,11 +221,11 @@ export class Registry extends ContractWrapper {
     /**
      * Raw transaction allowing another wallet to provide module interfaces supported by the signer's OCPI implementation.
      * Can also be used to delete previously-set party modules by providing empty arrays.
-     * (note: this is an opt-in feature). 
+     * (note: this is an opt-in feature).
      * @param sender array of sender interface role module Ids.
      * @param receiver array of receiver interface role module Ids.
-     * @param signer the private key of the owner of the registry listing. The signer configured in the 
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async setPartyModulesRaw(sender: types.Module[], receiver: types.Module[], signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -247,8 +248,8 @@ export class Registry extends ContractWrapper {
 
     /**
      * Raw transaction allowing another wallet to delete the signer's OCN Registry party listing.
-     * @param signer the private key of the owner of the registry listing. The signer configured in the 
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async deletePartyRaw(signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()

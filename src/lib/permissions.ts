@@ -14,9 +14,10 @@
     limitations under the License.
 */
 
-import { ethers } from "ethers";
-import { ContractWrapper } from "./contract-wrapper";
-import { Service, Permission } from "./types";
+import { ethers } from "ethers"
+import { ContractWrapper } from "./contract-wrapper"
+import { Service, Permission } from "./types"
+import { Network } from "../types/network"
 import { setServiceRaw, createAgreementRaw, deleteServiceRaw, revokeAgreementRaw } from "./sign"
 
 
@@ -25,8 +26,8 @@ import { setServiceRaw, createAgreementRaw, deleteServiceRaw, revokeAgreementRaw
  */
 export class Permissions extends ContractWrapper {
 
-    constructor(environment: string, signer?: string) {
-        super("Permissions", environment, signer)
+    constructor(environment: string, signer?: string, environmentOptions?: Partial<Network>) {
+        super("Permissions", environment, signer, environmentOptions)
     }
 
     /**
@@ -84,7 +85,7 @@ export class Permissions extends ContractWrapper {
      * @param {string} url public url to further information  (optional - can leave empty)
      * @param {uint[]} permissions list of permissions required by the service
      * @param signer the private key of the owner of the registry listing. The signer configured in the
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async setServiceRaw(name: string, url: string, permissions: Permission[], signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -98,7 +99,7 @@ export class Permissions extends ContractWrapper {
     /**
      * Direct transaction by signer to delete a service from the OCN Registry.
      */
-    public async deleteService(): Promise<ethers.providers.TransactionReceipt> { 
+    public async deleteService(): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
         const tx = await this.contract.deleteService()
         await tx.wait()
@@ -107,8 +108,8 @@ export class Permissions extends ContractWrapper {
 
     /**
      * Remove the service of a given signer, using a raw transaction.
-     * @param signer the private key of the owner of the registry listing. The signer configured in the 
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * @param signer the private key of the owner of the registry listing. The signer configured in the
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async deleteServiceRaw(signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -156,7 +157,7 @@ export class Permissions extends ContractWrapper {
      * Bind service user to provider, agreeing to service's permissions, via raw transaction
      * @param {string} provider the address of the service provider
      * @param signer the private key of the owner of the registry listing. The signer configured in the
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async createAgreementRaw(provider: string, signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -182,7 +183,7 @@ export class Permissions extends ContractWrapper {
      * Revoke Service agreement via raw transaction
      * @param {string} provider the address of the service provider
      * @param signer the private key of the owner of the registry listing. The signer configured in the
-     * constructor is the "spender": they send and pay for the transaction on the network. 
+     * constructor is the "spender": they send and pay for the transaction on the network.
      */
     public async revokeAgreementRaw(provider: string, signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
@@ -196,7 +197,7 @@ export class Permissions extends ContractWrapper {
 
     private async getUserAgreements(providers: string[], hasUserAgreement: (provider: string) => Promise<boolean>): Promise<Service[]> {
         const services: Service[] = []
-        
+
         for (const provider of providers) {
             const hasAgreement = await hasUserAgreement(provider)
             if (hasAgreement) {
