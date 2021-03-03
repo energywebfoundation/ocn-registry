@@ -22,9 +22,9 @@ import { Contract, Network, Provider } from "../types/network"
 
 export class ContractWrapper {
 
-    private provider: ethers.providers.JsonRpcProvider
-    private wallet?: ethers.Wallet
-    protected contract: ethers.Contract
+    private readonly provider: ethers.providers.JsonRpcProvider
+    protected readonly wallet?: ethers.Wallet
+    protected readonly contract: ethers.Contract
 
     /**
      * Read/write mode of contract wrapper. If signer is provided in constructor arguments,

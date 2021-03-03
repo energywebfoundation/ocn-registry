@@ -1,6 +1,6 @@
 {
   "name": "@shareandcharge/ocn-registry",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Share & Charge registry smart contracts",
   "directories": {
     "test": "test"

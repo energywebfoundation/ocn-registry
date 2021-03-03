@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-import { ethers } from "ethers"
+import { ethers, Wallet } from "ethers";
 import { URL } from "url"
 import * as sign from "./sign"
 import * as types from "./types"
@@ -71,6 +71,10 @@ export class Registry extends ContractWrapper {
     public async setNode(domain: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
         const url = new URL(domain)
+        if (!this.wallet) {
+            throw new Error("Signer address is needed to verify for existing node registration")
+        }
+        await this.checkForExistingNode(this.wallet)
         const tx = await this.contract.setNode(url.origin)
         await tx.wait()
         return tx
@@ -85,6 +89,7 @@ export class Registry extends ContractWrapper {
     public async setNodeRaw(domain: string, signer: string): Promise<ethers.providers.TransactionReceipt> {
         this.verifyWritable()
         const wallet = new ethers.Wallet(signer)
+        await this.checkForExistingNode(wallet)
         const sig = await sign.setNodeRaw(domain, wallet)
         const tx = await this.contract.setNodeRaw(wallet.address, domain, sig.v, sig.r, sig.s)
         await tx.wait()
@@ -274,6 +279,13 @@ export class Registry extends ContractWrapper {
                 operator: input.operatorAddress,
                 url: input.operatorDomain
             }
+        }
+    }
+
+    private async checkForExistingNode(signer: Wallet) {
+        const existingNode = await this.getNode(signer.address)
+        if (existingNode) {
+            throw new Error("This operator has an existing node. Call delete-node to remove prior to updating.")
         }
     }
 
